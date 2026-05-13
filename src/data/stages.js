@@ -1,0 +1,95 @@
+export const stages = [
+  {
+    id: "stage_001",
+    order: 1,
+    title: "あ행 입문",
+    area: "히라가나 숲",
+    description: "あ, い, う, え, お를 배웁니다.",
+    requiredStageId: null,
+    questionIds: ["q001", "q002", "q003", "q004", "q005"],
+    monster: {
+      name: "초보 슬라임",
+      emoji: "🟢",
+      hp: 100,
+    },
+    rewards: {
+      exp: 40,
+      gold: 20,
+    },
+  },
+  {
+    id: "stage_002",
+    order: 2,
+    title: "か행 입문",
+    area: "카나 평원",
+    description: "か, き, く, け, こ를 배웁니다.",
+    requiredStageId: "stage_001",
+    questionIds: ["q006", "q007", "q008", "q009", "q010"],
+    monster: {
+      name: "카나 고블린",
+      emoji: "👺",
+      hp: 100,
+    },
+    rewards: {
+      exp: 50,
+      gold: 25,
+    },
+  },
+  {
+    id: "stage_003",
+    order: 3,
+    title: "さ행 입문",
+    area: "사쿠라 언덕",
+    description: "さ, し, す, せ, そ를 배웁니다.",
+    requiredStageId: "stage_002",
+    questionIds: ["q011", "q012", "q013", "q014", "q015"],
+    monster: {
+      name: "사무라이 임프",
+      emoji: "👹",
+      hp: 100,
+    },
+    rewards: {
+      exp: 60,
+      gold: 30,
+    },
+  },
+  {
+    id: "stage_004",
+    order: 4,
+    title: "기초 단어 탐험",
+    area: "단어 미로",
+    description: "일상에서 자주 쓰이는 기초 명사를 배웁니다.",
+    requiredStageId: "stage_003",
+    questionIds: ["q016", "q017", "q018", "q019", "q020"],
+    monster: {
+      name: "어휘 유령",
+      emoji: "👻",
+      hp: 100,
+    },
+    rewards: {
+      exp: 70,
+      gold: 35,
+    },
+  },
+  {
+    id: "stage_005",
+    order: 5,
+    title: "보스전: 일본어 수호자",
+    area: "최종 성채",
+    description: "これまでの集大成！히라가나·단어·표현을 총망라한 보스 도전입니다.",
+    requiredStageId: "stage_004",
+    questionIds: [
+      "q021", "q022", "q023", "q024", "q025",
+      "q026", "q027", "q028", "q029", "q030",
+    ],
+    monster: {
+      name: "일본어 수호자",
+      emoji: "🐉",
+      hp: 200,
+    },
+    rewards: {
+      exp: 150,
+      gold: 80,
+    },
+  },
+];
