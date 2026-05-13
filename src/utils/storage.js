@@ -38,7 +38,7 @@ export function createDefaultSaveData() {
 export function normalizePlayer(raw) {
   if (!raw || typeof raw !== "object") return { ...defaultPlayer, stats: { ...defaultStats } };
 
-  const level = typeof raw.level === "number" ? raw.level : 1;
+  const level = typeof raw.level === "number" && raw.level >= 1 ? raw.level : 1;
   const title = raw.title || getTitleByLevel(level);
   const maxHp = typeof raw.maxHp === "number" ? raw.maxHp : calculateMaxHp(level);
 
