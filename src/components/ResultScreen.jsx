@@ -2,14 +2,8 @@ import { useEffect, useRef } from "react";
 import { getRequiredExp } from "../utils/gameLogic";
 
 export default function ResultScreen({
-  resultState,
-  player,
-  stages,
-  nextStage,
-  onResultSaved,
-  onStartStage,
-  onGoStageSelect,
-  onGoHome,
+  resultState, player, stages, nextStage,
+  onResultSaved, onStartStage, onStartTrial, onGoStageSelect, onGoHome,
 }) {
   const savedRef = useRef(false);
 
@@ -21,35 +15,87 @@ export default function ResultScreen({
   }, []);
 
   const stage = stages.find((s) => s.id === resultState.stageId);
+  const isTrial = resultState.mode === "trial";
   const {
-    isCleared,
-    totalQuestions,
-    correctCount,
-    accuracy,
-    remainingPlayerHp,
-    earnedExp,
-    earnedGold,
-    leveledUp,
-    previousLevel,
-    newLevel,
-    previousTitle,
-    newTitle,
+    trialPassed, isCleared, totalQuestions, correctCount, accuracy,
+    remainingPlayerHp, earnedExp, earnedGold,
+    leveledUp, previousLevel, newLevel, previousTitle, newTitle,
+    isFirstClear, isBestAccuracy,
   } = resultState;
 
-  const canNextStage = isCleared && nextStage;
+  const canNextStage = !isTrial && isCleared && nextStage;
 
+  if (isTrial) {
+    return (
+      <div className="screen">
+        <div className={`result-title-banner ${trialPassed ? "result-clear" : "result-fail"}`}>
+          <div className="result-title-icon">{trialPassed ? "🔓" : "🚫"}</div>
+          <div className="result-title-text">
+            {trialPassed ? "도약 시험 통과!" : "도약 시험 실패"}
+          </div>
+          {stage && <div className="result-stage-name">{stage.title}</div>}
+        </div>
+
+        <div className="card result-card">
+          <h3 className="card-title">📊 시험 결과</h3>
+          <div className="result-row">
+            <span>정답</span>
+            <span className="result-value">{correctCount} / {totalQuestions}</span>
+          </div>
+          <div className="result-row">
+            <span>정답률</span>
+            <span className={`result-value ${accuracy >= 80 ? "text-green" : "text-red"}`}>{accuracy}%</span>
+          </div>
+          <div className="result-row">
+            <span>통과 조건</span>
+            <span className="result-value text-muted">정답률 80% 이상</span>
+          </div>
+          <div className="result-row">
+            <span>결과</span>
+            <span className={`result-value ${trialPassed ? "text-green" : "text-red"}`}>
+              {trialPassed ? "✅ 해금됨" : "❌ 해금 실패"}
+            </span>
+          </div>
+        </div>
+
+        {trialPassed && (
+          <div className="card result-card trial-pass-card">
+            <div className="trial-pass-msg">이제 해당 스테이지에 도전할 수 있습니다!</div>
+          </div>
+        )}
+
+        <div className="result-notice">보상 없음 (도약 시험)</div>
+
+        <div className="btn-list">
+          {trialPassed && (
+            <button className="btn btn-primary btn-large" onClick={() => onStartStage(resultState.stageId)}>
+              ⚔️ 해금된 스테이지 도전하기
+            </button>
+          )}
+          {!trialPassed && (
+            <button className="btn btn-outline btn-large" onClick={() => onStartTrial(resultState.stageId)}>
+              🧪 다시 도전
+            </button>
+          )}
+          <button className="btn btn-secondary btn-large" onClick={onGoStageSelect}>🗺️ 스테이지 선택</button>
+          <button className="btn btn-ghost btn-large" onClick={onGoHome}>🏠 홈으로</button>
+        </div>
+      </div>
+    );
+  }
+
+  // 일반 스테이지 결과
   return (
     <div className="screen">
-      {/* 결과 타이틀 */}
       <div className={`result-title-banner ${isCleared ? "result-clear" : "result-fail"}`}>
         <div className="result-title-icon">{isCleared ? "🏆" : "💀"}</div>
-        <div className="result-title-text">
-          {isCleared ? "Stage Clear!" : "Quest Failed"}
-        </div>
+        <div className="result-title-text">{isCleared ? "Stage Clear!" : "Quest Failed"}</div>
         {stage && <div className="result-stage-name">{stage.title}</div>}
+        {isCleared && isFirstClear && <div className="first-clear-badge">🌟 첫 클리어!</div>}
+        {isCleared && !isFirstClear && isBestAccuracy && <div className="first-clear-badge">📈 최고 기록 갱신!</div>}
+        {isCleared && accuracy === 100 && <div className="perfect-result-badge">✨ PERFECT!</div>}
       </div>
 
-      {/* 전투 결과 */}
       <div className="card result-card">
         <h3 className="card-title">📊 전투 결과</h3>
         <div className="result-row">
@@ -58,17 +104,14 @@ export default function ResultScreen({
         </div>
         <div className="result-row">
           <span>정답률</span>
-          <span className={`result-value ${accuracy >= 60 ? "text-green" : "text-red"}`}>
-            {accuracy}%
-          </span>
+          <span className={`result-value ${accuracy >= 60 ? "text-green" : "text-red"}`}>{accuracy}%</span>
         </div>
         <div className="result-row">
           <span>남은 HP</span>
-          <span className="result-value">{remainingPlayerHp} / 100</span>
+          <span className="result-value">{remainingPlayerHp}</span>
         </div>
       </div>
 
-      {/* 보상 */}
       <div className="card result-card">
         <h3 className="card-title">🎁 획득 보상</h3>
         <div className="result-row">
@@ -78,27 +121,24 @@ export default function ResultScreen({
         <div className="result-row">
           <span>골드</span>
           <span className="result-value text-yellow">
-            {isCleared ? `+${earnedGold}G` : "0G (실패)"}
+            {isCleared && earnedGold > 0 ? `+${earnedGold}G` : "0G"}
           </span>
         </div>
+        {isCleared && earnedGold === 0 && (
+          <div className="result-note">이미 클리어한 스테이지라 Gold 보상은 없습니다.</div>
+        )}
       </div>
 
-      {/* 레벨업 / 칭호 변경 */}
       {leveledUp && (
         <div className="card level-up-card">
           <div className="level-up-title">🎉 레벨업!</div>
-          <div className="level-up-detail">
-            Lv.{previousLevel} → Lv.{newLevel}
-          </div>
+          <div className="level-up-detail">Lv.{previousLevel} → Lv.{newLevel}</div>
           {previousTitle !== newTitle && (
-            <div className="level-up-title-change">
-              칭호: {previousTitle} → {newTitle}
-            </div>
+            <div className="level-up-title-change">칭호: {previousTitle} → {newTitle}</div>
           )}
         </div>
       )}
 
-      {/* 현재 플레이어 상태 */}
       <div className="card result-card">
         <h3 className="card-title">👤 현재 상태</h3>
         <div className="result-row">
@@ -111,9 +151,7 @@ export default function ResultScreen({
         </div>
         <div className="result-row">
           <span>EXP</span>
-          <span className="result-value">
-            {player.exp} / {getRequiredExp(player.level)}
-          </span>
+          <span className="result-value">{player.exp} / {getRequiredExp(player.level)}</span>
         </div>
         <div className="result-row">
           <span>Gold</span>
@@ -121,31 +159,17 @@ export default function ResultScreen({
         </div>
       </div>
 
-      {/* 버튼 */}
       <div className="btn-list">
         {canNextStage && (
-          <button
-            className="btn btn-primary btn-large"
-            onClick={() => onStartStage(nextStage.id)}
-          >
-            ▶️ 다음 스테이지: {nextStage.title}
+          <button className="btn btn-primary btn-large" onClick={() => onStartStage(nextStage.id)}>
+            ▶️ 다음: {nextStage.title}
           </button>
         )}
-
-        <button
-          className="btn btn-secondary btn-large"
-          onClick={() => onStartStage(resultState.stageId)}
-        >
+        <button className="btn btn-secondary btn-large" onClick={() => onStartStage(resultState.stageId)}>
           🔄 다시 도전
         </button>
-
-        <button className="btn btn-outline btn-large" onClick={onGoStageSelect}>
-          🗺️ 스테이지 선택
-        </button>
-
-        <button className="btn btn-ghost btn-large" onClick={onGoHome}>
-          🏠 홈으로
-        </button>
+        <button className="btn btn-outline btn-large" onClick={onGoStageSelect}>🗺️ 스테이지 선택</button>
+        <button className="btn btn-ghost btn-large" onClick={onGoHome}>🏠 홈으로</button>
       </div>
     </div>
   );

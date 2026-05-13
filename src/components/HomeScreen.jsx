@@ -1,29 +1,33 @@
+import { useState } from "react";
 import ProgressBar from "./ProgressBar";
 import { getRequiredExp, getTodayQuestStage } from "../utils/gameLogic";
 
-export default function HomeScreen({
-  player,
-  stages,
-  onStartQuest,
-  onGoStageSelect,
-  onReset,
-  setErrorMessage,
-}) {
+const SHOP_ITEMS = [
+  { key: "hints", label: "힌트 티켓", emoji: "💡", price: 15, desc: "오답 선택지 1개를 숨겨줍니다" },
+  { key: "potions", label: "회복 포션", emoji: "💊", price: 25, desc: "전투 중 HP를 30 회복합니다" },
+  { key: "trialTickets", label: "도약의 증표", emoji: "🔑", price: 40, desc: "잠긴 스테이지 도약 시험에 사용" },
+];
+
+export default function HomeScreen({ player, stages, onStartQuest, onGoStageSelect, onReset, onPurchase, setErrorMessage }) {
+  const [showShop, setShowShop] = useState(false);
+
   const requiredExp = getRequiredExp(player.level);
   const todayStage = getTodayQuestStage(stages, player);
-  const hasWrongQuestions = player.wrongQuestionIds.length > 0;
   const noStages = !stages || stages.length === 0;
+  const totalStages = stages?.length ?? 0;
+  const clearedCount = player.clearedStageIds?.length ?? 0;
+  const totalAnswered = player.stats?.totalAnswered ?? 0;
+  const totalCorrect = player.stats?.totalCorrect ?? 0;
+  const accuracy = totalAnswered > 0 ? Math.round((totalCorrect / totalAnswered) * 100) : 0;
+  const inventory = player.inventory ?? { hints: 0, potions: 0, trialTickets: 0 };
 
   function handleTodayQuest() {
-    if (!todayStage) {
-      setErrorMessage("추천 스테이지를 찾을 수 없습니다.");
-      return;
-    }
+    if (!todayStage) { setErrorMessage("추천 스테이지를 찾을 수 없습니다."); return; }
     onStartQuest(todayStage.id);
   }
 
-  function handleWrongReview() {
-    alert("오답 복습 기능은 준비 중입니다! 💪");
+  function handleBuy(itemKey) {
+    onPurchase(itemKey);
   }
 
   return (
@@ -33,45 +37,86 @@ export default function HomeScreen({
         <p className="app-subtitle">일본어를 배우며 몬스터를 물리쳐라!</p>
       </header>
 
-      {noStages && (
-        <div className="error-card">스테이지 데이터를 불러올 수 없습니다.</div>
-      )}
+      {noStages && <div className="error-card">스테이지 데이터를 불러올 수 없습니다.</div>}
 
       {/* 플레이어 카드 */}
       <div className="card player-card">
         <div className="player-card-top">
           <div className="player-level-badge">Lv.{player.level}</div>
           <div className="player-info">
-            <div className="player-title">{player.title}</div>
-            <div className="player-exp-text">
-              EXP {player.exp} / {requiredExp}
-            </div>
+            <div className="player-title-text">{player.title}</div>
+            <div className="player-exp-text">EXP {player.exp} / {requiredExp}</div>
           </div>
           <div className="player-gold">💰 {player.gold}G</div>
         </div>
         <ProgressBar current={player.exp} max={requiredExp} colorClass="exp-bar" />
+        <div className="player-hp-row">
+          <span className="hp-chip">❤️ HP {player.maxHp}</span>
+          <span className="stat-chip">📊 정답률 {accuracy}%</span>
+          <span className="stat-chip">🏆 {clearedCount}/{totalStages} 클리어</span>
+        </div>
       </div>
 
-      {/* 오늘 학습 카드 */}
+      {/* 아이템 현황 */}
+      <div className="card inventory-card">
+        <div className="card-title">🎒 보유 아이템</div>
+        <div className="inventory-row">
+          <span className="inv-item">💡 힌트 {inventory.hints}개</span>
+          <span className="inv-item">💊 포션 {inventory.potions}개</span>
+          <span className="inv-item">🔑 도약증표 {inventory.trialTickets}개</span>
+        </div>
+      </div>
+
+      {/* 오늘 학습 */}
       <div className="card today-card">
-        <h3 className="card-title">📅 오늘의 학습</h3>
+        <div className="card-title">📅 오늘의 학습</div>
         <div className="today-stats">
           <div className="today-stat">
-            <span className="stat-value">{player.stats.todayAnswered}</span>
+            <span className="stat-value">{player.stats?.todayAnswered ?? 0}</span>
             <span className="stat-label">문제</span>
           </div>
           <div className="today-stat">
-            <span className="stat-value">{player.stats.todayClearedStages}</span>
-            <span className="stat-label">스테이지 클리어</span>
+            <span className="stat-value">{player.stats?.todayClearedStages ?? 0}</span>
+            <span className="stat-label">클리어</span>
           </div>
           <div className="today-stat">
-            <span className="stat-value">{player.stats.streakDays}</span>
-            <span className="stat-label">연속 학습일</span>
+            <span className="stat-value">{player.stats?.streakDays ?? 0}</span>
+            <span className="stat-label">연속일</span>
           </div>
         </div>
       </div>
 
-      {/* 버튼 목록 */}
+      {/* 상점 */}
+      {showShop && (
+        <div className="card shop-card">
+          <div className="shop-header">
+            <div className="card-title">🏪 상점</div>
+            <span className="gold-display">보유 골드: 💰 {player.gold}G</span>
+          </div>
+          <div className="shop-items">
+            {SHOP_ITEMS.map((item) => (
+              <div key={item.key} className="shop-item">
+                <div className="shop-item-info">
+                  <span className="shop-item-emoji">{item.emoji}</span>
+                  <div>
+                    <div className="shop-item-name">{item.label}</div>
+                    <div className="shop-item-desc">{item.desc}</div>
+                  </div>
+                </div>
+                <button
+                  className="btn btn-primary btn-small"
+                  onClick={() => handleBuy(item.key)}
+                  disabled={player.gold < item.price}
+                >
+                  {item.price}G
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 버튼 */}
       <div className="btn-list">
         <button
           className="btn btn-primary btn-large"
@@ -79,32 +124,18 @@ export default function HomeScreen({
           disabled={noStages || !todayStage}
         >
           ⚔️ 오늘의 퀘스트 시작
-          {todayStage && (
-            <span className="btn-sub">{todayStage.title}</span>
-          )}
+          {todayStage && <span className="btn-sub">{todayStage.title}</span>}
         </button>
 
-        <button
-          className="btn btn-secondary btn-large"
-          onClick={onGoStageSelect}
-          disabled={noStages}
-        >
+        <button className="btn btn-secondary btn-large" onClick={onGoStageSelect} disabled={noStages}>
           🗺️ 스테이지 선택
         </button>
 
         <button
-          className="btn btn-outline btn-large"
-          onClick={handleWrongReview}
-          disabled={!hasWrongQuestions}
-          title={!hasWrongQuestions ? "오답 문제가 없습니다" : ""}
+          className={`btn btn-large ${showShop ? "btn-outline" : "btn-ghost"}`}
+          onClick={() => setShowShop((v) => !v)}
         >
-          📝 오답 복습
-          {!hasWrongQuestions && (
-            <span className="btn-sub">오답 없음</span>
-          )}
-          {hasWrongQuestions && (
-            <span className="btn-sub">{player.wrongQuestionIds.length}개</span>
-          )}
+          🏪 {showShop ? "상점 닫기" : "상점 열기"}
         </button>
 
         <button className="btn btn-danger btn-small" onClick={onReset}>
@@ -113,7 +144,7 @@ export default function HomeScreen({
       </div>
 
       <footer className="home-footer">
-        <span>총 {player.stats.totalAnswered}문제 풀이 · 정답 {player.stats.totalCorrect}개</span>
+        총 {totalAnswered}문제 · 정답 {totalCorrect}개 · 정답률 {accuracy}%
       </footer>
     </div>
   );
