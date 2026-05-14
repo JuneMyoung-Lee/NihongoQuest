@@ -11,7 +11,8 @@ import {
   canAttemptTrial, applyPurchase, getReplayReward,
   updateStageProgress,
 } from "./utils/gameLogic";
-import { getRandomQuestionsByStage, getTrialQuestionsByStage, validateQuestions, validateStages } from "./utils/question";
+import { getRandomQuestionsByStage, getTrialQuestionsByStage, validateQuestions, validateStages, validateVocabulary } from "./utils/question";
+import { vocabulary } from "./data/vocabulary";
 
 import HomeScreen from "./components/HomeScreen";
 import StageSelectScreen from "./components/StageSelectScreen";
@@ -35,6 +36,7 @@ export default function App() {
   useEffect(() => {
     validateQuestions(questions);
     validateStages(stages, questions);
+    validateVocabulary(questions, vocabulary);
 
     const saved = loadSaveData();
     const refreshed = refreshDailyStats(saved.player);

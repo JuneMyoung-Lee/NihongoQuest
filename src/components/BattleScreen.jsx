@@ -1,5 +1,6 @@
 import ProgressBar from "./ProgressBar";
 import VocabNotesPanel from "./VocabNotesPanel";
+import AnnotatedText from "./AnnotatedText";
 import { vocabulary } from "../data/vocabulary";
 import { getVocabularyByIds, getKanjiNotesFromVocabulary } from "../utils/question";
 
@@ -22,6 +23,9 @@ export default function BattleScreen({ battleState, setBattleState, player, stag
   const monsterDisplay = isTrial
     ? { name: "문지기 스핑크스", emoji: "🦉", hp: 100 }
     : stage.monster;
+
+  const vocabItems = getVocabularyByIds(currentQuestion.vocabIds, vocabulary);
+  const kanjiNotes = getKanjiNotesFromVocabulary(vocabItems);
 
   function handleChoiceClick(choiceId) {
     if (hasAnswered) return;
@@ -147,7 +151,7 @@ export default function BattleScreen({ battleState, setBattleState, player, stag
 
       {/* 문제 */}
       <div className="card question-card">
-        <div className="question-prompt">{currentQuestion.prompt}</div>
+        <AnnotatedText text={currentQuestion.prompt} vocabItems={vocabItems} />
         <div className="choices-grid">
           {currentQuestion.choices.map((choice) => (
             <button
@@ -168,11 +172,7 @@ export default function BattleScreen({ battleState, setBattleState, player, stag
           </div>
         )}
 
-        {hasAnswered && (() => {
-          const vocabItems = getVocabularyByIds(currentQuestion.vocabIds, vocabulary);
-          const kanjiNotes = getKanjiNotesFromVocabulary(vocabItems);
-          return <VocabNotesPanel vocabItems={vocabItems} kanjiNotes={kanjiNotes} />;
-        })()}
+        {hasAnswered && <VocabNotesPanel vocabItems={vocabItems} kanjiNotes={kanjiNotes} />}
 
         {!hasAnswered && feedbackMessage && (
           <div className="feedback-box feedback-info">

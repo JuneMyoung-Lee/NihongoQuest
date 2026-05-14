@@ -153,3 +153,35 @@ export function validateStages(stages, questions) {
   });
   return valid;
 }
+
+// vocabulary 연결 검증. 앱을 죽이지 않고 console.warn만 사용.
+export function validateVocabulary(questions, vocabulary) {
+  if (!Array.isArray(questions) || !vocabulary || typeof vocabulary !== "object") return;
+
+  const vocabKeys = new Set(Object.keys(vocabulary));
+
+  // vocab 항목 자체 검증
+  Object.values(vocabulary).forEach((v) => {
+    if (!v || !v.id) return;
+    if (!v.surface) {
+      console.warn(`[validate] vocabulary "${v.id}"의 surface가 비어 있습니다.`);
+    }
+  });
+
+  // question.vocabIds → vocabulary 연결 검증
+  questions.forEach((q) => {
+    if (!Array.isArray(q.vocabIds) || q.vocabIds.length === 0) return;
+    q.vocabIds.forEach((id) => {
+      if (!vocabKeys.has(id)) {
+        console.warn(`[validate] 문제 "${q.id}"의 vocabId "${id}"가 vocabulary에 없습니다.`);
+        return;
+      }
+      const v = vocabulary[id];
+      if (v && v.surface && typeof q.prompt === "string" && !q.prompt.includes(v.surface)) {
+        console.warn(
+          `[validate] 문제 "${q.id}" prompt에 vocab "${id}" (surface: "${v.surface}")가 없습니다. explanation/choice 용도일 수 있습니다.`
+        );
+      }
+    });
+  });
+}
