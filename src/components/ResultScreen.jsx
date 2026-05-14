@@ -17,13 +17,28 @@ export default function ResultScreen({
   const stage = stages.find((s) => s.id === resultState.stageId);
   const isTrial = resultState.mode === "trial";
   const {
-    trialPassed, isCleared, totalQuestions, correctCount, accuracy,
-    remainingPlayerHp, earnedExp, earnedGold,
+    trialPassed, isCleared, totalQuestions, answeredCount, correctCount, wrongCount,
+    accuracy, remainingPlayerHp, earnedExp, earnedGold,
     leveledUp, previousLevel, newLevel, previousTitle, newTitle,
     isFirstClear, isBestAccuracy,
+    requiredCorrect, passAccuracy, clearReason, failReason,
   } = resultState;
 
+  const answered = answeredCount ?? totalQuestions;
+  const showAnsweredNote = answered < totalQuestions;
+
   const canNextStage = !isTrial && isCleared && nextStage;
+
+  // 클리어/실패 사유 텍스트
+  function getClearReasonText() {
+    if (clearReason === "monsterDefeated") return "몬스터를 처치했습니다!";
+    return "클리어";
+  }
+  function getFailReasonText() {
+    if (failReason === "playerDead") return "HP가 0이 됐습니다.";
+    if (failReason === "notEnoughCorrect") return `목표 정답 ${requiredCorrect}개에 도달하지 못했습니다.`;
+    return "퀘스트 실패";
+  }
 
   if (isTrial) {
     return (
@@ -34,21 +49,32 @@ export default function ResultScreen({
             {trialPassed ? "도약 시험 통과!" : "도약 시험 실패"}
           </div>
           {stage && <div className="result-stage-name">{stage.title}</div>}
+          <div className="result-reason-text">
+            {trialPassed ? getClearReasonText() : getFailReasonText()}
+          </div>
         </div>
 
         <div className="card result-card">
           <h3 className="card-title">📊 시험 결과</h3>
+          {showAnsweredNote && (
+            <div className="result-row">
+              <span>풀이</span>
+              <span className="result-value">{answered} / {totalQuestions}문제</span>
+            </div>
+          )}
           <div className="result-row">
             <span>정답</span>
-            <span className="result-value">{correctCount} / {totalQuestions}</span>
+            <span className="result-value">{correctCount}개 (목표 {requiredCorrect}개)</span>
           </div>
           <div className="result-row">
             <span>정답률</span>
-            <span className={`result-value ${accuracy >= 80 ? "text-green" : "text-red"}`}>{accuracy}%</span>
+            <span className={`result-value ${accuracy >= (passAccuracy ?? 80) ? "text-green" : "text-red"}`}>
+              {accuracy}%
+            </span>
           </div>
           <div className="result-row">
             <span>통과 조건</span>
-            <span className="result-value text-muted">정답률 80% 이상</span>
+            <span className="result-value text-muted">정답률 {passAccuracy ?? 80}% 이상</span>
           </div>
           <div className="result-row">
             <span>결과</span>
@@ -91,6 +117,9 @@ export default function ResultScreen({
         <div className="result-title-icon">{isCleared ? "🏆" : "💀"}</div>
         <div className="result-title-text">{isCleared ? "Stage Clear!" : "Quest Failed"}</div>
         {stage && <div className="result-stage-name">{stage.title}</div>}
+        <div className="result-reason-text">
+          {isCleared ? getClearReasonText() : getFailReasonText()}
+        </div>
         {isCleared && isFirstClear && <div className="first-clear-badge">🌟 첫 클리어!</div>}
         {isCleared && !isFirstClear && isBestAccuracy && <div className="first-clear-badge">📈 최고 기록 갱신!</div>}
         {isCleared && accuracy === 100 && <div className="perfect-result-badge">✨ PERFECT!</div>}
@@ -98,9 +127,22 @@ export default function ResultScreen({
 
       <div className="card result-card">
         <h3 className="card-title">📊 전투 결과</h3>
+        {showAnsweredNote && (
+          <div className="result-row">
+            <span>풀이</span>
+            <span className="result-value">{answered} / {totalQuestions}문제</span>
+          </div>
+        )}
         <div className="result-row">
           <span>정답</span>
-          <span className="result-value">{correctCount} / {totalQuestions}</span>
+          <span className="result-value">
+            {correctCount}개
+            {requiredCorrect != null && (
+              <span className={`result-sub ${correctCount >= requiredCorrect ? "text-green" : "text-muted"}`}>
+                {" "}(목표 {requiredCorrect}개)
+              </span>
+            )}
+          </span>
         </div>
         <div className="result-row">
           <span>정답률</span>

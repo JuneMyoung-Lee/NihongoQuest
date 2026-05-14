@@ -9,15 +9,56 @@ export function shuffleArray(array) {
   return arr;
 }
 
-// 전투 시작용: 후보 풀에서 questionCount개 랜덤 추출 + choices 셔플.
+// questionIds 배열에서 중복 id 제거 (중복 발견 시 console.warn)
+export function dedupeQuestionIds(questionIds) {
+  if (!Array.isArray(questionIds)) return [];
+  const seen = new Set();
+  return questionIds.filter((id) => {
+    if (seen.has(id)) {
+      console.warn(`[question] questionIds에 중복 id: "${id}"`);
+      return false;
+    }
+    seen.add(id);
+    return true;
+  });
+}
+
+// question 배열에서 id 기준 중복 제거
+export function dedupeQuestionsById(questions) {
+  if (!Array.isArray(questions)) return [];
+  const seen = new Set();
+  return questions.filter((q) => {
+    if (!q?.id || seen.has(q.id)) return false;
+    seen.add(q.id);
+    return true;
+  });
+}
+
+// question 배열에서 prompt+correctChoiceId 기준 중복 제거 (id가 다른 동일 문제 방지)
+export function dedupeQuestionsByPrompt(questions) {
+  if (!Array.isArray(questions)) return [];
+  const seen = new Set();
+  return questions.filter((q) => {
+    if (!q?.prompt) return true;
+    const key = `${q.prompt}|||${q.correctChoiceId ?? ""}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+// 전투 시작용: without replacement 방식으로 questionCount개 추출 + choices 셔플.
 // 원본 question 객체는 mutation하지 않음.
 export function getRandomQuestionsByStage(stage, questions) {
   if (!stage || !stage.questionIds || !questions) return [];
 
   const questionMap = new Map(questions.map((q) => [q.id, q]));
 
-  // 1. 후보 조회 (없는 ID는 경고 후 제외)
-  const pool = stage.questionIds.reduce((acc, id) => {
+  // 1. 중복 id 제거 (중복 있으면 warn)
+  const uniqueIds = dedupeQuestionIds(stage.questionIds);
+
+  // 2. 실제 question 객체 조회 (없는 id는 경고 후 제외)
+  const pool = uniqueIds.reduce((acc, id) => {
     if (questionMap.has(id)) {
       acc.push(questionMap.get(id));
     } else {
@@ -26,42 +67,51 @@ export function getRandomQuestionsByStage(stage, questions) {
     return acc;
   }, []);
 
-  // 2. 풀 셔플
-  const shuffledPool = shuffleArray(pool);
+  // 3. id 기준 중복 재확인 (방어적)
+  const dedupedById = dedupeQuestionsById(pool);
 
-  // 3. questionCount개만큼 slice
-  //    - questionCount 없거나 0 이하 → 전체 사용
-  //    - questionCount > pool.length → 가능한 전체 사용
+  // 4. prompt+correctChoiceId 기준 중복 제거
+  const dedupedByPrompt = dedupeQuestionsByPrompt(dedupedById);
+
+  // 5. Fisher-Yates 셔플 (without replacement)
+  const shuffled = shuffleArray(dedupedByPrompt);
+
+  // 6. questionCount만큼 slice
   const count =
     stage.questionCount && stage.questionCount > 0
-      ? Math.min(stage.questionCount, shuffledPool.length)
-      : shuffledPool.length;
+      ? Math.min(stage.questionCount, shuffled.length)
+      : shuffled.length;
 
-  const selected = shuffledPool.slice(0, count);
+  const selected = shuffled.slice(0, count);
 
-  // 4. 각 문제의 choices도 셔플 (새 객체로 복사, 원본 mutation 없음)
+  // 7. 각 문제의 choices 셔플 (새 객체로 복사, 원본 mutation 없음)
   return selected.map((q) => ({
     ...q,
-    choices: shuffleArray(q.choices),
+    choices: shuffleArray(q.choices ?? []),
   }));
 }
 
-// 도약 시험용: 후보 풀에서 최대 count개 랜덤 추출 + choices 셔플.
+// 도약 시험용: without replacement 방식으로 최대 count개 추출 + choices 셔플.
 export function getTrialQuestionsByStage(stage, questions, count = 5) {
   if (!stage || !stage.questionIds || !questions) return [];
 
   const questionMap = new Map(questions.map((q) => [q.id, q]));
 
-  const pool = stage.questionIds.reduce((acc, id) => {
+  const uniqueIds = dedupeQuestionIds(stage.questionIds);
+
+  const pool = uniqueIds.reduce((acc, id) => {
     if (questionMap.has(id)) acc.push(questionMap.get(id));
     return acc;
   }, []);
 
-  const selected = shuffleArray(pool).slice(0, count);
+  const dedupedById = dedupeQuestionsById(pool);
+  const dedupedByPrompt = dedupeQuestionsByPrompt(dedupedById);
+
+  const selected = shuffleArray(dedupedByPrompt).slice(0, count);
 
   return selected.map((q) => ({
     ...q,
-    choices: shuffleArray(q.choices),
+    choices: shuffleArray(q.choices ?? []),
   }));
 }
 
@@ -78,8 +128,7 @@ export function getVocabularyByIds(vocabIds, vocabulary) {
   }, []);
 }
 
-
-// 기존 코드와의 하위 호환 유지 (validate 등에서 사용)
+// 기존 코드와의 하위 호환 유지
 export function getQuestionsByStage(stage, questions) {
   if (!stage || !stage.questionIds || !questions) return [];
   const questionMap = new Map(questions.map((q) => [q.id, q]));
@@ -125,21 +174,110 @@ export function validateQuestions(questions) {
   return valid;
 }
 
+const VALID_JLPT_LEVELS = new Set(["N5", "N4", "N3", "N2", "N1"]);
+
 export function validateStages(stages, questions) {
   if (!Array.isArray(stages)) {
     console.error("[validate] stages가 배열이 아닙니다.");
     return false;
   }
+
   const questionIds = new Set((questions || []).map((q) => q.id));
+  const stageIds = new Set();
   let valid = true;
+
   stages.forEach((s) => {
-    (s.questionIds || []).forEach((id) => {
+    // id 누락·중복
+    if (!s.id) {
+      console.warn("[validate] stage.id 누락");
+      valid = false;
+      return;
+    }
+    if (stageIds.has(s.id)) {
+      console.warn(`[validate] 스테이지 id 중복: "${s.id}"`);
+      valid = false;
+    }
+    stageIds.add(s.id);
+
+    // title
+    if (!s.title) {
+      console.warn(`[validate] 스테이지 "${s.id}"의 title 누락`);
+      valid = false;
+    }
+
+    // jlptLevel
+    if (!s.jlptLevel || !VALID_JLPT_LEVELS.has(s.jlptLevel)) {
+      console.warn(`[validate] 스테이지 "${s.id}"의 jlptLevel이 없거나 유효하지 않음: "${s.jlptLevel}"`);
+      valid = false;
+    }
+
+    // groupOrder / stageOrderInGroup
+    if (s.groupOrder == null) {
+      console.warn(`[validate] 스테이지 "${s.id}"의 groupOrder 누락`);
+    }
+    if (s.stageOrderInGroup == null) {
+      console.warn(`[validate] 스테이지 "${s.id}"의 stageOrderInGroup 누락`);
+    }
+
+    // questionIds 배열 여부
+    if (!Array.isArray(s.questionIds)) {
+      console.warn(`[validate] 스테이지 "${s.id}"의 questionIds가 배열이 아닙니다.`);
+      valid = false;
+      return;
+    }
+
+    // questionIds 중복 및 존재 여부
+    const seenQIds = new Set();
+    s.questionIds.forEach((id) => {
+      if (seenQIds.has(id)) {
+        console.warn(`[validate] 스테이지 "${s.id}"의 questionIds에 중복 id: "${id}"`);
+        valid = false;
+      }
+      seenQIds.add(id);
       if (!questionIds.has(id)) {
         console.warn(`[validate] 스테이지 "${s.id}"의 questionId "${id}"가 questions에 없습니다.`);
         valid = false;
       }
     });
+
+    // questionCount > unique 문제 수
+    if (s.questionCount != null && s.questionCount > seenQIds.size) {
+      console.warn(
+        `[validate] 스테이지 "${s.id}"의 questionCount(${s.questionCount})가 실제 고유 문제 수(${seenQIds.size})보다 큽니다.`
+      );
+    }
+
+    // monster
+    if (!s.monster?.name) {
+      console.warn(`[validate] 스테이지 "${s.id}"의 monster.name 누락`);
+    }
+    if (!s.monster?.emoji) {
+      console.warn(`[validate] 스테이지 "${s.id}"의 monster.emoji 누락`);
+    }
+    if (!s.monster?.hp || s.monster.hp <= 0) {
+      console.warn(`[validate] 스테이지 "${s.id}"의 monster.hp가 없거나 0 이하`);
+      valid = false;
+    }
+
+    // rewards
+    if (s.rewards?.exp < 0) {
+      console.warn(`[validate] 스테이지 "${s.id}"의 rewards.exp가 음수`);
+    }
+    if (s.rewards?.gold < 0) {
+      console.warn(`[validate] 스테이지 "${s.id}"의 rewards.gold가 음수`);
+    }
   });
+
+  // requiredStageId 참조 검증 (두 번째 패스 — 모든 id 수집 후 체크)
+  stages.forEach((s) => {
+    if (s.requiredStageId && !stageIds.has(s.requiredStageId)) {
+      console.warn(
+        `[validate] 스테이지 "${s.id}"의 requiredStageId "${s.requiredStageId}"가 존재하지 않습니다.`
+      );
+      valid = false;
+    }
+  });
+
   return valid;
 }
 
@@ -149,7 +287,6 @@ export function validateVocabulary(questions, vocabulary) {
 
   const vocabKeys = new Set(Object.keys(vocabulary));
 
-  // vocab 항목 자체 검증
   Object.values(vocabulary).forEach((v) => {
     if (!v || !v.id) return;
     if (!v.surface) {
@@ -157,7 +294,6 @@ export function validateVocabulary(questions, vocabulary) {
     }
   });
 
-  // question.vocabIds → vocabulary 연결 검증
   questions.forEach((q) => {
     if (!Array.isArray(q.vocabIds) || q.vocabIds.length === 0) return;
     q.vocabIds.forEach((id) => {

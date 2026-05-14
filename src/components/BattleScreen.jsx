@@ -1,18 +1,74 @@
+import { useState, useEffect, useRef } from "react";
 import ProgressBar from "./ProgressBar";
 import VocabNotesPanel from "./VocabNotesPanel";
 import AnnotatedText from "./AnnotatedText";
+import FloatingBattleText from "./FloatingBattleText";
 import { vocabulary } from "../data/vocabulary";
 import { getVocabularyByIds } from "../utils/question";
+
+// battleState.battleRules가 없는 구버전 state에 대한 fallback
+function getFallbackRules(questions) {
+  const total = questions?.length ?? 0;
+  const required = Math.max(1, Math.ceil(total * 0.7));
+  return {
+    requiredCorrect: required,
+    allowedWrong: Math.max(0, total - required),
+    mistakesToFail: total - required + 1,
+    damageToPlayer: 50,
+    damageToMonster: 20,
+  };
+}
 
 export default function BattleScreen({ battleState, setBattleState, player, stages, onBattleEnd, onUseItem, onExit }) {
   const stage = stages.find((s) => s.id === battleState.stageId);
   if (!stage) return <div className="screen"><p>스테이지 정보를 불러올 수 없습니다.</p></div>;
 
+  // ── 애니메이션 & 로그 state ──────────────────────────────────────
+  const [battleEvent, setBattleEvent] = useState(null);
+  const [battleLog, setBattleLog] = useState([]);
+  const [playerAnimClass, setPlayerAnimClass] = useState("");
+  const [monsterAnimClass, setMonsterAnimClass] = useState("");
+
+  function addToLog(entry) {
+    setBattleLog((prev) => [...prev, entry].slice(-3));
+  }
+
+  // 포션 사용 감지 (playerHp 증가 시 회복 애니메이션)
+  const prevPlayerHpRef = useRef(null);
+  useEffect(() => {
+    if (prevPlayerHpRef.current === null) {
+      prevPlayerHpRef.current = battleState.playerHp;
+      return;
+    }
+    const delta = battleState.playerHp - prevPlayerHpRef.current;
+    if (delta > 0) {
+      setBattleEvent({ id: Date.now(), type: "heal", target: "player", amount: delta });
+      setPlayerAnimClass("is-healed");
+    }
+    prevPlayerHpRef.current = battleState.playerHp;
+  }, [battleState.playerHp]);
+
+  // 아이템 사용 피드백 메시지 → 전투 로그
+  const prevFeedbackRef = useRef("");
+  useEffect(() => {
+    const msg = battleState.feedbackMessage;
+    if (!battleState.hasAnswered && msg && msg !== prevFeedbackRef.current) {
+      prevFeedbackRef.current = msg;
+      if (msg.startsWith("💊") || msg.startsWith("💡")) {
+        addToLog(msg);
+      }
+    }
+  }, [battleState.feedbackMessage, battleState.hasAnswered]);
+
+  // ── 구조분해 ─────────────────────────────────────────────────────
   const {
     mode, questions, currentQuestionIndex, playerHp, playerMaxHp,
     monsterHp, monsterMaxHp, correctCount, hasAnswered,
     selectedChoiceId, isCurrentAnswerCorrect, feedbackMessage, hiddenChoiceIds,
+    wrongCount = 0, isFinished = false,
   } = battleState;
+
+  const rules = battleState.battleRules ?? getFallbackRules(questions);
 
   const isTrial = mode === "trial";
   const currentQuestion = questions[currentQuestionIndex];
@@ -21,56 +77,95 @@ export default function BattleScreen({ battleState, setBattleState, player, stag
   const inventory = player?.inventory ?? { hints: 0, potions: 0 };
 
   const monsterDisplay = isTrial
-    ? { name: "문지기 스핑크스", emoji: "🦉", hp: 100 }
+    ? { name: "문지기 스핑크스", emoji: "🦉", hp: monsterMaxHp }
     : stage.monster;
 
   const vocabItems = getVocabularyByIds(currentQuestion.vocabIds, vocabulary);
 
+  // ── 핵심 전투 로직 (기존 그대로) ─────────────────────────────────
   function handleChoiceClick(choiceId) {
-    if (hasAnswered) return;
+    if (hasAnswered || isFinished) return;
     if (hiddenChoiceIds.includes(choiceId)) return;
 
     const isCorrect = choiceId === currentQuestion.correctChoiceId;
-    const newMonsterHp = isCorrect ? Math.max(0, monsterHp - 20) : monsterHp;
-    const newPlayerHp = isCorrect ? playerHp : Math.max(0, playerHp - (isTrial ? 20 : 10));
+    const newCorrectCount = isCorrect ? correctCount + 1 : correctCount;
+    const newWrongCount = isCorrect ? wrongCount : wrongCount + 1;
+
+    const newMonsterHp = isCorrect
+      ? Math.max(0, monsterHp - rules.damageToMonster)
+      : monsterHp;
+    const newPlayerHp = isCorrect
+      ? playerHp
+      : Math.max(0, playerHp - rules.damageToPlayer);
+
     const newWrongIds = isCorrect
       ? battleState.wrongQuestionIds
       : [...new Set([...battleState.wrongQuestionIds, currentQuestion.id])];
+
+    const monsterDefeated = newMonsterHp <= 0;
+    const playerDead = newPlayerHp <= 0;
+    const newIsFinished = monsterDefeated || playerDead || isLastQuestion;
+
+    let msg = "";
+    if (isCorrect) {
+      msg = monsterDefeated ? "✅ 정답! 몬스터를 처치했습니다!" : "✅ 정답입니다!";
+    } else {
+      const correctText = currentQuestion.choices.find(
+        (c) => c.id === currentQuestion.correctChoiceId
+      )?.text ?? "";
+      msg = playerDead
+        ? `❌ 오답! HP가 0이 됐습니다. 정답: ${correctText}`
+        : `❌ 오답! 정답: ${correctText}`;
+    }
+
+    // 애니메이션 트리거 (로직과 분리)
+    const eventId = Date.now();
+    if (isCorrect) {
+      setPlayerAnimClass("is-attacking");
+      setMonsterAnimClass("is-hit");
+      setBattleEvent({ id: eventId, type: "damage", target: "monster", amount: rules.damageToMonster });
+      addToLog(`✅ 정답! ${monsterDisplay.name}에게 ${rules.damageToMonster} 데미지!`);
+    } else {
+      setMonsterAnimClass("is-attacking");
+      setPlayerAnimClass("is-hit");
+      setBattleEvent({ id: eventId, type: "damage", target: "player", amount: rules.damageToPlayer });
+      addToLog(`❌ 오답! 플레이어가 ${rules.damageToPlayer} 데미지를 받았습니다.`);
+    }
 
     setBattleState((prev) => ({
       ...prev,
       playerHp: newPlayerHp,
       monsterHp: newMonsterHp,
-      correctCount: isCorrect ? prev.correctCount + 1 : prev.correctCount,
+      correctCount: newCorrectCount,
+      wrongCount: newWrongCount,
       answeredQuestionIds: [...prev.answeredQuestionIds, currentQuestion.id],
       wrongQuestionIds: newWrongIds,
       hasAnswered: true,
       selectedChoiceId: choiceId,
       isCurrentAnswerCorrect: isCorrect,
-      feedbackMessage: isCorrect
-        ? "✅ 정답입니다!"
-        : `❌ 오답! 정답: ${currentQuestion.choices.find((c) => c.id === currentQuestion.correctChoiceId)?.text ?? ""}`,
+      isFinished: newIsFinished,
+      feedbackMessage: msg,
     }));
   }
 
   function handleNext() {
     if (!hasAnswered) return;
 
-    const updatedState = {
-      ...battleState,
+    if (isFinished) {
+      onBattleEnd(battleState);
+      return;
+    }
+
+    prevFeedbackRef.current = "";
+    setBattleState((prev) => ({
+      ...prev,
       hasAnswered: false,
       selectedChoiceId: null,
       isCurrentAnswerCorrect: null,
       feedbackMessage: "",
       hiddenChoiceIds: [],
-    };
-
-    if (battleState.playerHp <= 0 || isLastQuestion) {
-      onBattleEnd({ ...updatedState, currentQuestionIndex });
-      return;
-    }
-
-    setBattleState({ ...updatedState, currentQuestionIndex: currentQuestionIndex + 1 });
+      currentQuestionIndex: prev.currentQuestionIndex + 1,
+    }));
   }
 
   function handleExit() {
@@ -87,6 +182,14 @@ export default function BattleScreen({ battleState, setBattleState, player, stag
     return "choice-btn choice-disabled";
   }
 
+  const wrongDangerClass =
+    wrongCount >= rules.mistakesToFail
+      ? "goal-danger"
+      : wrongCount >= rules.mistakesToFail - 1
+      ? "goal-warning"
+      : "";
+  const correctAchievedClass = correctCount >= rules.requiredCorrect ? "goal-achieved" : "";
+
   return (
     <div className="screen">
       {/* 헤더 */}
@@ -99,32 +202,78 @@ export default function BattleScreen({ battleState, setBattleState, player, stag
       {/* 도약 시험 안내 배너 */}
       {isTrial && (
         <div className="trial-banner">
-          🧪 도약 시험 · 통과 조건: 정답률 80% 이상 · 아이템 사용 불가
+          🧪 도약 시험 · 통과 조건: 정답률 {rules.passAccuracy}% 이상 · 아이템 사용 불가
         </div>
       )}
 
-      {/* HP 상태 */}
-      <div className={`card battle-status monster-card theme-${stage.monster.theme}`}>
-        <div className="hp-row">
-          <div className="hp-block">
-            <div className="hp-label">🧑 플레이어</div>
-            <div className="hp-value">{playerHp} / {playerMaxHp}</div>
-            <ProgressBar current={playerHp} max={playerMaxHp} colorClass="player-hp-bar" />
+      {/* ── 전투 필드 ── */}
+      <div className={`card battle-field monster-card theme-${stage.monster.theme}`}>
+        {/* 플레이어 */}
+        <div
+          className={`battle-entity player-entity${playerAnimClass ? ` ${playerAnimClass}` : ""}`}
+          onAnimationEnd={() => setPlayerAnimClass("")}
+        >
+          <div className="float-text-anchor">
+            {battleEvent && (
+              <FloatingBattleText key={battleEvent.id} event={battleEvent} target="player" />
+            )}
           </div>
-          <div className="battle-vs">VS</div>
-          <div className="hp-block">
-            <div className="hp-label">{monsterDisplay.emoji} {monsterDisplay.name}</div>
-            <div className="hp-value">{monsterHp} / {monsterMaxHp}</div>
-            <ProgressBar current={monsterHp} max={monsterMaxHp} colorClass="monster-hp-bar" />
+          <div className="battle-entity-emoji">🧑</div>
+          <div className="battle-entity-name">플레이어</div>
+          <div className="battle-entity-hp-value">{playerHp} / {playerMaxHp}</div>
+          <ProgressBar current={playerHp} max={playerMaxHp} colorClass="player-hp-bar" hpColors />
+        </div>
+
+        {/* VS */}
+        <div className="battle-vs-col">
+          <span className="battle-vs">VS</span>
+        </div>
+
+        {/* 몬스터 */}
+        <div
+          className={`battle-entity monster-entity${monsterAnimClass ? ` ${monsterAnimClass}` : ""}`}
+          onAnimationEnd={() => setMonsterAnimClass("")}
+        >
+          <div className="float-text-anchor">
+            {battleEvent && (
+              <FloatingBattleText key={battleEvent.id} event={battleEvent} target="monster" />
+            )}
           </div>
+          <div className="battle-entity-emoji battle-monster-emoji">{monsterDisplay.emoji}</div>
+          <div className="battle-entity-name">{monsterDisplay.name}</div>
+          <div className="battle-entity-hp-value">{monsterHp} / {monsterMaxHp}</div>
+          <ProgressBar current={monsterHp} max={monsterMaxHp} colorClass="monster-hp-bar" />
         </div>
       </div>
 
-      {/* 진행 바 */}
-      <div className="question-progress">
-        <ProgressBar current={correctCount} max={totalQuestions} colorClass="correct-bar" />
-        <div className="question-progress-label">정답 {correctCount}/{totalQuestions}</div>
+      {/* 클리어 목표 */}
+      <div className="battle-goal-card">
+        <div className="battle-goal-row">
+          <span className="battle-goal-label">🎯 정답</span>
+          <span className={`battle-goal-value ${correctAchievedClass}`}>
+            {correctCount} / {rules.requiredCorrect}
+          </span>
+          <span className="battle-goal-sep">·</span>
+          <span className="battle-goal-label">⚠️ 오답</span>
+          <span className={`battle-goal-value ${wrongDangerClass}`}>
+            {wrongCount} / {rules.mistakesToFail}
+          </span>
+        </div>
       </div>
+
+      {/* 전투 로그 */}
+      {battleLog.length > 0 && (
+        <div className="battle-log">
+          {battleLog.map((entry, i) => (
+            <div
+              key={i}
+              className={`battle-log-entry${i === battleLog.length - 1 ? " battle-log-latest" : ""}`}
+            >
+              {entry}
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* 아이템 */}
       {!isTrial && (
@@ -132,7 +281,7 @@ export default function BattleScreen({ battleState, setBattleState, player, stag
           <button
             className="item-btn"
             onClick={() => onUseItem("hints")}
-            disabled={hasAnswered || (inventory.hints ?? 0) <= 0}
+            disabled={hasAnswered || isFinished || (inventory.hints ?? 0) <= 0}
             title="힌트: 오답 선택지 1개 숨김"
           >
             💡 힌트 ×{inventory.hints ?? 0}
@@ -140,7 +289,7 @@ export default function BattleScreen({ battleState, setBattleState, player, stag
           <button
             className="item-btn"
             onClick={() => onUseItem("potions")}
-            disabled={playerHp >= playerMaxHp || (inventory.potions ?? 0) <= 0}
+            disabled={playerHp >= playerMaxHp || isFinished || (inventory.potions ?? 0) <= 0}
             title="포션: HP +30 회복"
           >
             💊 포션 ×{inventory.potions ?? 0}
@@ -157,7 +306,7 @@ export default function BattleScreen({ battleState, setBattleState, player, stag
               key={choice.id}
               className={getChoiceClass(choice.id)}
               onClick={() => handleChoiceClick(choice.id)}
-              disabled={hasAnswered || hiddenChoiceIds.includes(choice.id)}
+              disabled={hasAnswered || isFinished || hiddenChoiceIds.includes(choice.id)}
             >
               {hiddenChoiceIds.includes(choice.id) ? "—" : choice.text}
             </button>
@@ -186,7 +335,7 @@ export default function BattleScreen({ battleState, setBattleState, player, stag
         onClick={handleNext}
         disabled={!hasAnswered}
       >
-        {isLastQuestion || battleState.playerHp <= 0 ? "결과 보기 →" : "다음 문제 →"}
+        {isFinished ? "결과 보기 →" : "다음 문제 →"}
       </button>
     </div>
   );

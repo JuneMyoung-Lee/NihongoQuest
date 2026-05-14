@@ -6,6 +6,45 @@ import {
   JLPT_LEVELS, JLPT_INFO,
 } from "../utils/gameLogic";
 
+// label 기준 중복 제거 (대소문자·공백 정규화)
+function dedupeBadgesByLabel(badges) {
+  const seen = new Set();
+  return badges.filter((b) => {
+    const key = (b.label ?? "").trim().toLowerCase();
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+// 스테이지 카드에 표시할 뱃지 목록 반환
+function getStageBadges(stage) {
+  const badges = [];
+  if (stage.jlptLevel) {
+    badges.push({ type: "level", label: stage.jlptLevel });
+  }
+  // difficulty가 jlptLevel과 다를 때만 추가 (같으면 중복이므로 생략)
+  if (stage.difficulty && stage.difficulty !== stage.jlptLevel) {
+    badges.push({ type: "difficulty", label: stage.difficulty });
+  }
+  if (stage.topic) {
+    badges.push({ type: "topic", label: stage.topic });
+  }
+  return dedupeBadgesByLabel(badges);
+}
+
+// 뱃지 타입별 CSS 클래스
+function getBadgeClassName(badge) {
+  if (badge.type === "level") {
+    return `jlpt-level-badge jlpt-badge-sm jlpt-${badge.label}`;
+  }
+  if (badge.type === "difficulty") {
+    const slug = (badge.label ?? "").replace("+", "plus").replace("-", "minus");
+    return `difficulty-badge diff-${slug}`;
+  }
+  return "topic-badge";
+}
+
 export default function StageSelectScreen({ player, stages, onStartStage, onStartTrial, onGoHome }) {
   const groupedStages = groupStagesByJlpt(stages);
   const jlptProgress = getJlptProgress(stages, player);
@@ -80,7 +119,7 @@ export default function StageSelectScreen({ player, stages, onStartStage, onStar
           else if (isTrialUnlocked) { statusLabel = "도약 해금 🔓"; statusClass = "status-trial"; }
           else if (isUnlocked) { statusLabel = "도전 가능 ⚔️"; statusClass = "status-available"; }
 
-          const diffClass = `diff-${stage.difficulty?.replace("+", "plus").replace("-", "minus") ?? ""}`;
+          const badges = getStageBadges(stage);
 
           return (
             <div
@@ -89,10 +128,11 @@ export default function StageSelectScreen({ player, stages, onStartStage, onStar
             >
               <div className="stage-card-header">
                 <div className="stage-order-wrap">
-                  <span className={`jlpt-level-badge jlpt-badge-sm jlpt-${stage.jlptLevel ?? "N4"}`}>
-                    {stage.jlptLevel ?? "N4"}
-                  </span>
-                  <span className={`difficulty-badge ${diffClass}`}>{stage.difficulty}</span>
+                  {badges.map((badge) => (
+                    <span key={badge.label} className={getBadgeClassName(badge)}>
+                      {badge.label}
+                    </span>
+                  ))}
                 </div>
                 <span className={`stage-status ${statusClass}`}>{statusLabel}</span>
               </div>

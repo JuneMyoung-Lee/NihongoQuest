@@ -1278,6 +1278,7 @@ export const questions = [
     ],
     correctChoiceId: "a",
     explanation: '현재 상태(~입니다)를 나타낼 때는 「です」. 「ます」는 동사의 정중형 어미로 「食べます」처럼 씁니다.',
+    vocabIds: ["gakusei"],
     tags: ["expression", "desu", "n5"],
   },
   {
@@ -1294,6 +1295,7 @@ export const questions = [
     ],
     correctChoiceId: "a",
     explanation: "사물의 존재를 나타낼 때는 「あります」, 사람·동물의 존재는 「います」. コップ(컵)는 사물이므로 「あります」.",
+    vocabIds: ["teburu", "ue", "koppu"],
     tags: ["expression", "arimasu", "imasu", "n5"],
   },
   {
@@ -1310,6 +1312,7 @@ export const questions = [
     ],
     correctChoiceId: "c",
     explanation: "동사의 직접 목적어에는 「を」. 「パンを食べる」= 빵을 먹다.",
+    vocabIds: ["maiasa", "pan"],
     tags: ["particle", "wo", "n5"],
   },
   {
@@ -1377,7 +1380,7 @@ export const questions = [
     ],
     correctChoiceId: "b",
     explanation: "사람(先生)의 부재를 나타낼 때는 「いません」. 물건의 부재는 「ありません」.",
-    vocabIds: ["sensei"],
+    vocabIds: ["kyou", "gakko", "sensei"],
     tags: ["expression", "imasen", "n5"],
   },
   {
@@ -1394,6 +1397,7 @@ export const questions = [
     ],
     correctChoiceId: "c",
     explanation: "사람을 물을 때는 「だれ」(누구). 「どこ」는 장소, 「なに」는 사물, 「いくら」는 금액.",
+    vocabIds: ["sensei"],
     tags: ["expression", "question-word", "n5"],
   },
 
@@ -1412,6 +1416,7 @@ export const questions = [
     ],
     correctChoiceId: "b",
     explanation: "「によって」는 '~에 따라, ~에 의해'로 차이의 기준·원인을 나타냅니다. 「国によって」= 나라에 따라 다르다.",
+    vocabIds: ["mondai", "kuni", "kaishaku"],
     tags: ["expression", "niyotte", "n2"],
   },
   {
@@ -1428,6 +1433,7 @@ export const questions = [
     ],
     correctChoiceId: "c",
     explanation: "「に対して」는 '~에 대해'로 상대방·대상을 나타냅니다. 「上司に対して」= 상사에 대해.",
+    vocabIds: ["joshi", "reigi", "taisetsu"],
     tags: ["expression", "nitaishite", "n2"],
   },
   {
@@ -1444,6 +1450,7 @@ export const questions = [
     ],
     correctChoiceId: "c",
     explanation: "「に関して」는 '~에 관해'로 화제·주제를 나타냅니다. 「計画に関して」= 계획에 관해 설명해 주세요.",
+    vocabIds: ["keikaku", "setsumei"],
     tags: ["expression", "nikansHite", "n2"],
   },
   {
@@ -1460,6 +1467,7 @@ export const questions = [
     ],
     correctChoiceId: "a",
     explanation: "「だけでなく（〜も）」는 '~뿐만 아니라 ~도'의 뜻. 「英語だけでなく、フランス語も」= 영어뿐 아니라 프랑스어도.",
+    vocabIds: ["eigo"],
     tags: ["conjunction", "dakedenaku", "n2"],
   },
   {
@@ -1476,6 +1484,7 @@ export const questions = [
     ],
     correctChoiceId: "c",
     explanation: "「にもかかわらず」는 '~임에도 불구하고'로 앞의 상황에 반하는 결과가 이어질 때 씁니다.",
+    vocabIds: ["ame", "shiai"],
     tags: ["conjunction", "nimokakawARazu", "n2"],
   },
   {
@@ -1492,6 +1501,7 @@ export const questions = [
     ],
     correctChoiceId: "b",
     explanation: "「をきっかけに」는 '~을 계기로'로 어떤 사건이 변화의 출발점이 될 때 씁니다.",
+    vocabIds: ["dekigoto", "jinsei"],
     tags: ["expression", "okkikakenI", "n2"],
   },
   {
@@ -1508,6 +1518,7 @@ export const questions = [
     ],
     correctChoiceId: "b",
     explanation: "「に加えて」는 '~에 더하여, ~뿐만 아니라'로 앞 내용에 추가 정보를 덧붙입니다. 우수한 데다가 노력가이기도 하다.",
+    vocabIds: ["yushu", "doryoku"],
     tags: ["expression", "nikuwaete", "n2"],
   },
   {
@@ -1524,6 +1535,7 @@ export const questions = [
     ],
     correctChoiceId: "b",
     explanation: "「を通じて」는 '~을 통해'로 수단·매개를 나타냅니다. 「インターネットを通じて」= 인터넷을 통해.",
+    vocabIds: ["sekai"],
     tags: ["expression", "otsujiTe", "n2"],
   },
 
@@ -1542,6 +1554,7 @@ export const questions = [
     ],
     correctChoiceId: "c",
     explanation: "「ものの」는 '~이지만, ~이긴 해도'로 앞 사실을 인정하면서 뒤에 반대되는 내용을 이어갑니다.",
+    vocabIds: ["hansei"],
     tags: ["conjunction", "monono", "n2"],
   },
   {
@@ -1558,6 +1571,7 @@ export const questions = [
     ],
     correctChoiceId: "c",
     explanation: "「とはいえ」는 '~이라고는 해도, ~이지만'으로 사실을 인정하면서 예외나 제한을 덧붙일 때 씁니다.",
+    vocabIds: ["haru", "samui"],
     tags: ["conjunction", "tohaie", "n2"],
   },
   {
@@ -1574,6 +1588,7 @@ export const questions = [
     ],
     correctChoiceId: "b",
     explanation: "「のせいで」는 '~때문에'로 부정적 결과의 원인을 나타냅니다. 긍정적 결과는 「おかげで」를 씁니다.",
+    vocabIds: ["kotsu_jutai", "kaigi", "chikoku"],
     tags: ["expression", "noseidE", "n2"],
   },
   {
@@ -1590,6 +1605,7 @@ export const questions = [
     ],
     correctChoiceId: "b",
     explanation: "「おかげで」는 '~덕분에'로 긍정적 결과의 원인을 나타냅니다. 부정적 결과는 「せいで」를 씁니다.",
+    vocabIds: ["sensei", "shiken", "gokaku"],
     tags: ["expression", "okagedE", "n2"],
   },
   {
@@ -1606,6 +1622,7 @@ export const questions = [
     ],
     correctChoiceId: "a",
     explanation: "「わけではない」는 '~인 것은 아니다'로 부분적 부정을 나타냅니다. 일이 싫은 게 아니라 단지 피곤할 뿐이라는 표현.",
+    vocabIds: ["shigoto", "kirai"],
     tags: ["expression", "wakedewanai", "n2"],
   },
   {
@@ -1622,6 +1639,7 @@ export const questions = [
     ],
     correctChoiceId: "b",
     explanation: "「ことになっている」는 '~하기로 되어 있다'로 규칙·관습·결정 사항을 나타냅니다. 「ことにする」는 자신이 결정하는 것.",
+    vocabIds: ["gakko", "seifuku"],
     tags: ["expression", "kotoNInatteiru", "n2"],
   },
   {
@@ -1638,6 +1656,7 @@ export const questions = [
     ],
     correctChoiceId: "a",
     explanation: "「てからでないと～ない」는 '~하고 나서가 아니면 ~할 수 없다'로 순서의 전제 조건을 나타냅니다.",
+    vocabIds: ["kyoka", "heya"],
     tags: ["expression", "tekArAdENaito", "n2"],
   },
   {
@@ -1654,6 +1673,7 @@ export const questions = [
     ],
     correctChoiceId: "c",
     explanation: "「に反して」는 '~에 반해, ~와 달리'로 예상·기대에 반하는 상황을 나타냅니다.",
+    vocabIds: ["yoso", "shiken"],
     tags: ["expression", "nihaNShite", "n2"],
   },
 
@@ -1672,6 +1692,7 @@ export const questions = [
     ],
     correctChoiceId: "b",
     explanation: "「に至るまで」는 '~에 이르기까지'로 범위가 멀리까지 미침을 강조하는 N1 표현. 단순한 「まで」보다 더 광범위함을 강조합니다.",
+    vocabIds: ["meisei", "kokunai", "kaigai"],
     tags: ["expression", "niitarumade", "n1"],
   },
   {
@@ -1704,6 +1725,7 @@ export const questions = [
     ],
     correctChoiceId: "a",
     explanation: "「に堪えない」는 '~을 금할 수 없다'로 강한 감정이 억제되지 않음을 나타내는 N1 표현. 「同情に堪えない」= 동정을 금할 수 없다.",
+    vocabIds: ["higaisha", "dojo"],
     tags: ["expression", "nitaeNai", "n1"],
   },
   {
@@ -1720,6 +1742,7 @@ export const questions = [
     ],
     correctChoiceId: "a",
     explanation: "「にほかならない」는 '다름 아닌 ~이다'로 단정을 강조하는 N1 표현. 「にすぎない」는 '~에 지나지 않는다'로 뉘앙스가 다릅니다.",
+    vocabIds: ["seikou", "doryoku", "kekka"],
     tags: ["expression", "nihokaNaranai", "n1"],
   },
   {
@@ -1736,6 +1759,7 @@ export const questions = [
     ],
     correctChoiceId: "a",
     explanation: "「ずにはいられない」는 '~하지 않고는 있을 수 없다'로 참을 수 없는 충동·감정을 나타냅니다. 「ないではいられない」도 같은 뜻이나 「ず」가 더 문어체.",
+    vocabIds: ["eiga"],
     tags: ["expression", "zuniwairarenai", "n1"],
   },
   {
@@ -1752,6 +1776,7 @@ export const questions = [
     ],
     correctChoiceId: "a",
     explanation: "「をもって」는 '~로써, ~을 가지고'로 시점·수단·이유를 나타내는 격식체 N1 표현. 「本日をもって」= 오늘부로.",
+    vocabIds: ["honjitsu", "heiten"],
     tags: ["expression", "womotte", "n1"],
   },
   {
@@ -1768,6 +1793,7 @@ export const questions = [
     ],
     correctChoiceId: "a",
     explanation: "「ないまでも」는 '~까지는 아니더라도'로 최대치에는 이르지 않더라도 그 이하는 기대함을 나타내는 N1 표현.",
+    vocabIds: ["kanpeki", "teinei"],
     tags: ["expression", "naiMatemo", "n1"],
   },
   {
@@ -1784,6 +1810,7 @@ export const questions = [
     ],
     correctChoiceId: "b",
     explanation: "「に即して」는 '~에 입각하여, ~에 따라'로 어떤 기준·원칙을 기반으로 행동함을 나타내는 N1 격식체 표현.",
+    vocabIds: ["horitsu", "mondai", "handan"],
     tags: ["expression", "nisokushite", "n1"],
   },
 
@@ -1802,6 +1829,7 @@ export const questions = [
     ],
     correctChoiceId: "a",
     explanation: "「たりとも～ない」는 '~조차도 ~할 수 없다'로 극히 작은 단위조차 허용할 수 없음을 강조하는 N1 표현.",
+    vocabIds: ["ichibyou", "muda", "jikan"],
     tags: ["expression", "tarItomo", "n1"],
   },
   {
@@ -1818,6 +1846,7 @@ export const questions = [
     ],
     correctChoiceId: "b",
     explanation: "「ないともかぎらない」는 '~하지 않는다고 단언할 수도 없다'로 가능성을 배제할 수 없음을 나타냅니다.",
+    vocabIds: ["ame", "kasa"],
     tags: ["expression", "naitomokagiraanai", "n1"],
   },
   {
@@ -1834,6 +1863,7 @@ export const questions = [
     ],
     correctChoiceId: "b",
     explanation: "「を皮切りに」는 '~을 시작으로'로 일련의 사건 중 첫 번째 것을 나타내는 N1 표현. 「きっかけに」는 계기, 「皮切りに」는 시작점 강조.",
+    vocabIds: ["koen", "zenkoku"],
     tags: ["expression", "okawakiriNi", "n1"],
   },
   {
@@ -1850,6 +1880,7 @@ export const questions = [
     ],
     correctChoiceId: "c",
     explanation: "「すら」는 '~조차도'로 극단적인 예를 들어 전체를 강조하는 N1 문어체 표현. 「さえ」도 비슷하나 「すら」가 더 격식체.",
+    vocabIds: ["namae"],
     tags: ["expression", "sura", "n1"],
   },
   {
@@ -1866,6 +1897,7 @@ export const questions = [
     ],
     correctChoiceId: "d",
     explanation: "「だに」는 '~만 해도, ~하는 것만으로도'로 그것 하나만으로 충분한 결과를 강조하는 N1 고문어체 표현. 「想像するだに恐ろしい」= 상상만 해도 무섭다.",
+    vocabIds: ["sozo", "osoroshii", "kekka"],
     tags: ["expression", "dani", "n1"],
   },
   {
@@ -1882,6 +1914,7 @@ export const questions = [
     ],
     correctChoiceId: "b",
     explanation: "「いかんによらず」는 '~여하에 관계없이'로 N1 격식체 표현. 「にかかわらず」와 비슷하나 「いかん」이 포함되어 더 딱딱한 문어체.",
+    vocabIds: ["riyu", "chikoku"],
     tags: ["expression", "ikanNiyorazu", "n1"],
   },
   {
@@ -1898,6 +1931,7 @@ export const questions = [
     ],
     correctChoiceId: "c",
     explanation: "「諦めずに続けた結果、今は漢字も読めるようになりました」에서 포기하지 않고 계속한 결과 한자를 읽을 수 있게 됐음을 알 수 있습니다.",
+    vocabIds: ["nihongo", "benkyo", "kanji", "kekka"],
     tags: ["reading", "comprehension", "n1"],
   },
   {
@@ -1914,6 +1948,7 @@ export const questions = [
     ],
     correctChoiceId: "b",
     explanation: "「何か言うべきだったと後悔した」에서 무언가 말했어야 했다는 후회감이 느껴집니다. 사과나 말을 걸 기회를 놓쳤음을 나타냅니다.",
+    vocabIds: ["heya", "kokai"],
     tags: ["reading", "inference", "n1"],
   },
 ];

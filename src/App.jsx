@@ -13,6 +13,7 @@ import {
   updateStageProgress,
 } from "./utils/gameLogic";
 import { getRandomQuestionsByStage, getTrialQuestionsByStage, validateQuestions, validateStages, validateVocabulary } from "./utils/question";
+import { createBattleRules } from "./utils/battleRules";
 import { vocabulary } from "./data/vocabulary";
 
 import HomeScreen from "./components/HomeScreen";
@@ -59,17 +60,21 @@ export default function App() {
     const stageQuestions = getRandomQuestionsByStage(stage, questions);
     if (stageQuestions.length === 0) { setErrorMessage("이 스테이지에 문제가 없습니다."); return; }
 
+    const rules = createBattleRules({ stage, questions: stageQuestions, player, mode: "stage" });
+
     setErrorMessage("");
     setBattleState({
       mode: "stage",
       stageId,
       questions: stageQuestions,
+      battleRules: rules,
       currentQuestionIndex: 0,
-      playerHp: player.maxHp,
-      playerMaxHp: player.maxHp,
-      monsterHp: stage.monster.hp,
-      monsterMaxHp: stage.monster.hp,
+      playerHp: rules.playerMaxHp,
+      playerMaxHp: rules.playerMaxHp,
+      monsterHp: rules.monsterMaxHp,
+      monsterMaxHp: rules.monsterMaxHp,
       correctCount: 0,
+      wrongCount: 0,
       answeredQuestionIds: [],
       wrongQuestionIds: [],
       hasAnswered: false,
@@ -77,6 +82,7 @@ export default function App() {
       isCurrentAnswerCorrect: null,
       feedbackMessage: "",
       hiddenChoiceIds: [],
+      isFinished: false,
     });
     setResultState(null);
     setScreen(SCREEN.BATTLE);
@@ -107,17 +113,21 @@ export default function App() {
     const trialQuestions = getTrialQuestionsByStage(stage, questions, 5);
     if (trialQuestions.length === 0) { setErrorMessage("이 스테이지에 문제가 없습니다."); return; }
 
+    const trialRules = createBattleRules({ stage, questions: trialQuestions, player, mode: "trial" });
+
     setErrorMessage("");
     setBattleState({
       mode: "trial",
       stageId,
       questions: trialQuestions,
+      battleRules: trialRules,
       currentQuestionIndex: 0,
-      playerHp: 100,
-      playerMaxHp: 100,
-      monsterHp: 100,
-      monsterMaxHp: 100,
+      playerHp: trialRules.playerMaxHp,
+      playerMaxHp: trialRules.playerMaxHp,
+      monsterHp: trialRules.monsterMaxHp,
+      monsterMaxHp: trialRules.monsterMaxHp,
       correctCount: 0,
+      wrongCount: 0,
       answeredQuestionIds: [],
       wrongQuestionIds: [],
       hasAnswered: false,
@@ -125,6 +135,7 @@ export default function App() {
       isCurrentAnswerCorrect: null,
       feedbackMessage: "",
       hiddenChoiceIds: [],
+      isFinished: false,
     });
     setResultState(null);
     setScreen(SCREEN.BATTLE);
@@ -154,6 +165,7 @@ export default function App() {
       setBattleState((prev) => ({
         ...prev,
         hiddenChoiceIds: [...prev.hiddenChoiceIds, toHide],
+        feedbackMessage: "💡 힌트 사용! 오답 선택지 1개를 숨겼습니다.",
       }));
     } else if (itemType === "potions") {
       const count = player.inventory?.potions ?? 0;
@@ -194,24 +206,41 @@ export default function App() {
     const stage = stages.find((s) => s.id === finalBattleState.stageId);
     if (!stage) return;
 
-    const totalQuestions = finalBattleState.questions.length;
+    const rules = finalBattleState.battleRules;
+    const totalQuestions = finalBattleState.questions?.length ?? 0;
+    const answeredCount = finalBattleState.answeredQuestionIds?.length ?? 0;
     const correctCount = finalBattleState.correctCount;
-    const accuracy = totalQuestions > 0 ? Math.round((correctCount / totalQuestions) * 100) : 0;
+    const wrongCount = finalBattleState.wrongCount ?? Math.max(0, answeredCount - correctCount);
+    const accuracy = answeredCount > 0 ? Math.round((correctCount / answeredCount) * 100) : 0;
+    const isCleared = finalBattleState.monsterHp <= 0;
+    const requiredCorrect = rules?.requiredCorrect ?? Math.max(1, Math.ceil(totalQuestions * 0.7));
+    const passAccuracy = rules?.passAccuracy ?? 70;
+
+    const clearReason = isCleared ? "monsterDefeated" : null;
+    const failReason = !isCleared
+      ? (finalBattleState.playerHp <= 0 ? "playerDead" : "notEnoughCorrect")
+      : null;
 
     if (finalBattleState.mode === "trial") {
-      const passed = accuracy >= 80 && finalBattleState.playerHp > 0;
       setResultState({
         mode: "trial",
         stageId: finalBattleState.stageId,
         totalQuestions,
+        answeredCount,
         correctCount,
+        wrongCount,
         accuracy,
         isCleared: false,
-        trialPassed: passed,
+        trialPassed: isCleared,
+        requiredCorrect,
+        passAccuracy,
+        clearReason,
+        failReason,
         earnedExp: 0,
         earnedGold: 0,
         wrongQuestionIds: finalBattleState.wrongQuestionIds,
         remainingPlayerHp: finalBattleState.playerHp,
+        remainingMonsterHp: finalBattleState.monsterHp,
         saved: false,
         previousLevel: player.level,
         newLevel: player.level,
@@ -220,7 +249,6 @@ export default function App() {
         leveledUp: false,
       });
     } else {
-      const isCleared = accuracy >= 60 && finalBattleState.playerHp > 0;
       const alreadyCleared = player.clearedStageIds.includes(finalBattleState.stageId);
       const prevBest = player.stageProgress?.[finalBattleState.stageId]?.bestAccuracy ?? 0;
       const isBestUpdated = accuracy > prevBest;
@@ -230,16 +258,23 @@ export default function App() {
         mode: "stage",
         stageId: finalBattleState.stageId,
         totalQuestions,
+        answeredCount,
         correctCount,
+        wrongCount,
         accuracy,
         isCleared,
         trialPassed: false,
+        requiredCorrect,
+        passAccuracy,
+        clearReason,
+        failReason,
         earnedExp: isCleared ? reward.exp : Math.floor(stage.rewards.exp * 0.3),
         earnedGold: isCleared ? reward.gold : 0,
         isFirstClear: reward.isFirstClear,
         isBestAccuracy: isBestUpdated && isCleared,
         wrongQuestionIds: finalBattleState.wrongQuestionIds,
         remainingPlayerHp: finalBattleState.playerHp,
+        remainingMonsterHp: finalBattleState.monsterHp,
         saved: false,
         previousLevel: player.level,
         newLevel: player.level,
@@ -256,11 +291,12 @@ export default function App() {
 
     if (result.mode === "trial") {
       // 도약 시험: stats만 업데이트, clearedStageIds에는 넣지 않음
+      const trialAnswered = result.answeredCount ?? result.totalQuestions;
       updated.stats = {
         ...updated.stats,
-        totalAnswered: updated.stats.totalAnswered + result.totalQuestions,
+        totalAnswered: updated.stats.totalAnswered + trialAnswered,
         totalCorrect: updated.stats.totalCorrect + result.correctCount,
-        todayAnswered: updated.stats.todayAnswered + result.totalQuestions,
+        todayAnswered: updated.stats.todayAnswered + trialAnswered,
       };
       if (result.trialPassed) {
         updated.unlockedStageIds = mergeUnique(updated.unlockedStageIds, [result.stageId]);
@@ -273,11 +309,12 @@ export default function App() {
     }
 
     // 일반 스테이지
+    const stageAnswered = result.answeredCount ?? result.totalQuestions;
     updated.stats = {
       ...updated.stats,
-      totalAnswered: updated.stats.totalAnswered + result.totalQuestions,
+      totalAnswered: updated.stats.totalAnswered + stageAnswered,
       totalCorrect: updated.stats.totalCorrect + result.correctCount,
-      todayAnswered: updated.stats.todayAnswered + result.totalQuestions,
+      todayAnswered: updated.stats.todayAnswered + stageAnswered,
     };
 
     if (result.isCleared) {
