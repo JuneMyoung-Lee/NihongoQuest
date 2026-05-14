@@ -1,5 +1,6 @@
 import { useState } from "react";
 import ProgressBar from "./ProgressBar";
+import ThemeToggle from "./ThemeToggle";
 import { getRequiredExp, getTodayQuestStage } from "../utils/gameLogic";
 
 const SHOP_ITEMS = [
@@ -8,7 +9,7 @@ const SHOP_ITEMS = [
   { key: "trialTickets", label: "도약의 증표", emoji: "🔑", price: 40, desc: "잠긴 스테이지 도약 시험에 사용" },
 ];
 
-export default function HomeScreen({ player, stages, onStartQuest, onGoStageSelect, onReset, onPurchase, setErrorMessage }) {
+export default function HomeScreen({ player, stages, onStartQuest, onGoStageSelect, onReset, onPurchase, setErrorMessage, theme, onThemeToggle }) {
   const [showShop, setShowShop] = useState(false);
 
   const requiredExp = getRequiredExp(player.level);
@@ -33,6 +34,9 @@ export default function HomeScreen({ player, stages, onStartQuest, onGoStageSele
   return (
     <div className="screen">
       <header className="home-header">
+        <div className="home-header-top">
+          <ThemeToggle theme={theme} onToggle={onThemeToggle} />
+        </div>
         <h1 className="app-title">🎌 니혼고 퀘스트</h1>
         <p className="app-subtitle">일본어를 배우며 몬스터를 물리쳐라!</p>
       </header>

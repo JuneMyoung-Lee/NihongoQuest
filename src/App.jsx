@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import "./App.css";
+import { getInitialTheme, saveTheme, applyThemeToDocument } from "./utils/theme";
 
 import { stages } from "./data/stages";
 import { questions } from "./data/questions";
@@ -32,6 +33,12 @@ export default function App() {
   const [battleState, setBattleState] = useState(null);
   const [resultState, setResultState] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
+  const [theme, setTheme] = useState(getInitialTheme);
+
+  useEffect(() => {
+    applyThemeToDocument(theme);
+    saveTheme(theme);
+  }, [theme]);
 
   useEffect(() => {
     validateQuestions(questions);
@@ -354,6 +361,8 @@ export default function App() {
           onReset={handleReset}
           onPurchase={handlePurchase}
           setErrorMessage={setErrorMessage}
+          theme={theme}
+          onThemeToggle={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
         />
       )}
 
