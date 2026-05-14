@@ -1,4 +1,7 @@
 import ProgressBar from "./ProgressBar";
+import VocabNotesPanel from "./VocabNotesPanel";
+import { vocabulary } from "../data/vocabulary";
+import { getVocabularyByIds, getKanjiNotesFromVocabulary } from "../utils/question";
 
 export default function BattleScreen({ battleState, setBattleState, player, stages, onBattleEnd, onUseItem, onExit }) {
   const stage = stages.find((s) => s.id === battleState.stageId);
@@ -164,6 +167,12 @@ export default function BattleScreen({ battleState, setBattleState, player, stag
             <div className="feedback-explanation">{currentQuestion.explanation}</div>
           </div>
         )}
+
+        {hasAnswered && (() => {
+          const vocabItems = getVocabularyByIds(currentQuestion.vocabIds, vocabulary);
+          const kanjiNotes = getKanjiNotesFromVocabulary(vocabItems);
+          return <VocabNotesPanel vocabItems={vocabItems} kanjiNotes={kanjiNotes} />;
+        })()}
 
         {!hasAnswered && feedbackMessage && (
           <div className="feedback-box feedback-info">

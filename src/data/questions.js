@@ -23,6 +23,7 @@ export const questions = [
     ],
     correctChoiceId: "a",
     explanation: "「飲む」는 타동사이므로 마시는 대상(コーヒー)에는 목적격 조사 「を」를 씁니다.",
+    vocabIds: ["watashi", "maiasa", "nomu"],
     tags: ["particle", "wo", "n4"],
   },
   {
@@ -39,6 +40,7 @@ export const questions = [
     ],
     correctChoiceId: "b",
     explanation: "동작이 이루어지는 장소에는 「で」를 씁니다. 「図書館で」= 도서관에서.",
+    vocabIds: ["toshokan", "hon"],
     tags: ["particle", "de", "n4"],
   },
   {
@@ -55,6 +57,7 @@ export const questions = [
     ],
     correctChoiceId: "c",
     explanation: "출발점을 나타낼 때 「から」를 씁니다. 「駅から」= 역에서(출발).",
+    vocabIds: ["eki"],
     tags: ["particle", "kara", "n4"],
   },
   {
@@ -71,6 +74,7 @@ export const questions = [
     ],
     correctChoiceId: "c",
     explanation: "「もらう」의 주는 사람에는 「から」또는 「に」를 씁니다. '친구에게서 받았다'.",
+    vocabIds: ["tomodachi"],
     tags: ["particle", "kara", "n4"],
   },
   {
@@ -103,6 +107,7 @@ export const questions = [
     ],
     correctChoiceId: "a",
     explanation: "문장의 주제(화제)를 나타낼 때 「は」를 씁니다. '나는 ~하고 있습니다'.",
+    vocabIds: ["watashi", "nihongo", "benkyo"],
     tags: ["particle", "wa", "n4"],
   },
   {
@@ -119,6 +124,7 @@ export const questions = [
     ],
     correctChoiceId: "b",
     explanation: "「学校から家まで」= 학교에서 집까지. 출발점에는 「から」, 도착점에는 「まで」.",
+    vocabIds: ["gakko", "ie"],
     tags: ["particle", "kara", "made", "n4"],
   },
   {
@@ -135,6 +141,7 @@ export const questions = [
     ],
     correctChoiceId: "c",
     explanation: "「バスで来ました」는 교통수단을 나타냅니다. 대조를 나타낼 때 「は」로 바뀌어 「電車は来ませんでした」가 됩니다.",
+    vocabIds: ["densha"],
     tags: ["particle", "de", "wa", "n4"],
   },
 
@@ -153,6 +160,7 @@ export const questions = [
     ],
     correctChoiceId: "a",
     explanation: "食べる는 る동사(2그룹). て형은 語幹(食べ) + て = 食べて.",
+    vocabIds: ["taberu"],
     tags: ["verb", "te-form", "n4"],
   },
   {
@@ -169,6 +177,7 @@ export const questions = [
     ],
     correctChoiceId: "a",
     explanation: "く로 끝나는 う동사(1그룹)의 て형: く → いて. 書く → 書いて.",
+    vocabIds: ["kaku"],
     tags: ["verb", "te-form", "n4"],
   },
   {
@@ -185,6 +194,7 @@ export const questions = [
     ],
     correctChoiceId: "a",
     explanation: "む로 끝나는 う동사의 ない형: む → まない. 飲む → 飲まない.",
+    vocabIds: ["nomu"],
     tags: ["verb", "nai-form", "n4"],
   },
   {
@@ -201,6 +211,7 @@ export const questions = [
     ],
     correctChoiceId: "a",
     explanation: "来る(くる)는 불규칙 동사. て형은 「きて」. 불규칙이므로 통째로 암기!",
+    vocabIds: ["kuru"],
     tags: ["verb", "te-form", "irregular", "n4"],
   },
   {
@@ -283,6 +294,7 @@ export const questions = [
     ],
     correctChoiceId: "a",
     explanation: "い형용사의 부정형: 어미 い → くない. 高い → 高くない.",
+    vocabIds: ["takai"],
     tags: ["adjective", "i-adj", "negative", "n4"],
   },
   {
@@ -299,6 +311,7 @@ export const questions = [
     ],
     correctChoiceId: "a",
     explanation: "い형용사의 과거형: 어미 い → かった. 暑い → 暑かった.",
+    vocabIds: ["atsui"],
     tags: ["adjective", "i-adj", "past", "n4"],
   },
   {
@@ -331,6 +344,7 @@ export const questions = [
     ],
     correctChoiceId: "a",
     explanation: "な형용사가 명사를 수식할 때는 語幹 + な. 便利な駅 = 편리한 역.",
+    vocabIds: ["benri"],
     tags: ["adjective", "na-adj", "modification", "n4"],
   },
   {
@@ -363,6 +377,7 @@ export const questions = [
     ],
     correctChoiceId: "a",
     explanation: "な형용사의 과거형: 語幹 + だった. 有名だ → 有名だった. 정중형은 有名でした.",
+    vocabIds: ["yuumei"],
     tags: ["adjective", "na-adj", "past", "n4"],
   },
   {
@@ -379,6 +394,7 @@ export const questions = [
     ],
     correctChoiceId: "a",
     explanation: "い형용사의 과거 부정형: 〜くなかった. 「面白い → 面白くなかった」정중형은 +です.",
+    vocabIds: ["eiga", "omoshiroi"],
     tags: ["adjective", "i-adj", "past-negative", "n4"],
   },
   {
@@ -395,6 +411,7 @@ export const questions = [
     ],
     correctChoiceId: "a",
     explanation: "な형용사가 명사 앞에 올 때는 語幹 + な. 親切な先生 = 친절한 선생님.",
+    vocabIds: ["shinsetsu", "sensei"],
     tags: ["adjective", "na-adj", "n4"],
   },
 
@@ -413,6 +430,7 @@ export const questions = [
     ],
     correctChoiceId: "a",
     explanation: "上(うえ)는 '위'. 机の上 = 책상 위.",
+    vocabIds: ["hon", "tsukue"],
     tags: ["location", "n4"],
   },
   {
@@ -429,6 +447,7 @@ export const questions = [
     ],
     correctChoiceId: "a",
     explanation: "「どこですか」는 장소를 묻는 질문. 「隣(となり)」= 옆. 장소로 답해야 합니다.",
+    vocabIds: ["ginko"],
     tags: ["location", "question", "n4"],
   },
   {
@@ -445,6 +464,7 @@ export const questions = [
     ],
     correctChoiceId: "a",
     explanation: "시간의 시작점에는 「から」. 「3時から5時まで」= 3시부터 5시까지.",
+    vocabIds: ["kaigi"],
     tags: ["particle", "time", "n4"],
   },
   {
@@ -477,6 +497,7 @@ export const questions = [
     ],
     correctChoiceId: "a",
     explanation: "「どうやって」는 방법을 묻는 표현. 수단에는 「で」를 씁니다. 「電車で」= 전철로.",
+    vocabIds: ["densha"],
     tags: ["transport", "particle", "n4"],
   },
   {
@@ -493,6 +514,7 @@ export const questions = [
     ],
     correctChoiceId: "a",
     explanation: "「〜の前に」= ~앞에. コンビニ = 편의점, 病院 = 병원.",
+    vocabIds: ["byoin"],
     tags: ["location", "reading", "n4"],
   },
   {
@@ -509,6 +531,7 @@ export const questions = [
     ],
     correctChoiceId: "a",
     explanation: "시간 명사(몇 시, 무슨 요일 등) 뒤에는 「に」를 씁니다. 「9時に始まる」= 9시에 시작한다.",
+    vocabIds: ["jugyo"],
     tags: ["particle", "time", "ni", "n4"],
   },
   {
@@ -525,6 +548,7 @@ export const questions = [
     ],
     correctChoiceId: "a",
     explanation: "「〜の近く」= ~근처. 「駅の近く」= 역 근처.",
+    vocabIds: ["eki"],
     tags: ["location", "reading", "n4"],
   },
 
@@ -543,6 +567,7 @@ export const questions = [
     ],
     correctChoiceId: "a",
     explanation: "「〜てもいいです」= ~해도 됩니다. 동사 て형 + もいいですか로 허가를 구합니다.",
+    vocabIds: ["shashin"],
     tags: ["expression", "permission", "n4"],
   },
   {
@@ -559,6 +584,7 @@ export const questions = [
     ],
     correctChoiceId: "a",
     explanation: "「〜てはいけません」= ~하면 안 됩니다(금지). 동사 て형 + はいけません.",
+    vocabIds: ["jugyo"],
     tags: ["expression", "prohibition", "n4"],
   },
   {
@@ -623,6 +649,7 @@ export const questions = [
     ],
     correctChoiceId: "a",
     explanation: "「〜なければなりません」= ~하지 않으면 안 됩니다 = ~해야 합니다.",
+    vocabIds: ["shukudai"],
     tags: ["expression", "obligation", "reading", "n4"],
   },
   {
@@ -655,6 +682,7 @@ export const questions = [
     ],
     correctChoiceId: "a",
     explanation: "「〜なければなりません」= 의무(해야 한다). 나머지는 허가·금지·가능 표현.",
+    vocabIds: ["mainichi", "undo"],
     tags: ["expression", "obligation", "n4"],
   },
   {
@@ -687,6 +715,7 @@ export const questions = [
     ],
     correctChoiceId: "a",
     explanation: "「〜てはいけません」= ~하면 안 됩니다. 金지 표현.",
+    vocabIds: ["kodomo"],
     tags: ["expression", "prohibition", "reading", "n4"],
   },
 
@@ -705,6 +734,7 @@ export const questions = [
     ],
     correctChoiceId: "a",
     explanation: "「〜たことがあります」= ~한 적이 있습니다. 경험을 나타내는 표현.",
+    vocabIds: ["fujisan"],
     tags: ["expression", "experience", "n4"],
   },
   {
@@ -721,6 +751,7 @@ export const questions = [
     ],
     correctChoiceId: "a",
     explanation: "「〜つもりです」= ~할 생각입니다(의도). 확실한 계획이나 의도를 나타냅니다.",
+    vocabIds: ["rainen"],
     tags: ["expression", "intention", "n4"],
   },
   {
@@ -737,6 +768,7 @@ export const questions = [
     ],
     correctChoiceId: "a",
     explanation: "「〜たことがありますか」= ~한 적이 있습니까? 경험을 묻는 표현.",
+    vocabIds: ["taberu"],
     tags: ["expression", "experience", "reading", "n4"],
   },
   {
@@ -753,6 +785,7 @@ export const questions = [
     ],
     correctChoiceId: "a",
     explanation: "「〜たいです」= ~하고 싶습니다. 동사 ます형에서 ます를 빼고 + たい.",
+    vocabIds: ["nihongo", "benkyo"],
     tags: ["expression", "desire", "n4"],
   },
   {
@@ -769,6 +802,7 @@ export const questions = [
     ],
     correctChoiceId: "a",
     explanation: "「〜たことがありません」= ~한 적이 없습니다. 경험 없음을 나타내는 표현.",
+    vocabIds: ["osake", "nomu"],
     tags: ["expression", "experience", "negative", "n4"],
   },
   {
@@ -801,6 +835,7 @@ export const questions = [
     ],
     correctChoiceId: "a",
     explanation: "「〜つもりです」= ~할 생각입니다. 의도·계획을 나타냅니다.",
+    vocabIds: ["raishu", "eiga"],
     tags: ["expression", "intention", "n4"],
   },
   {
@@ -833,6 +868,7 @@ export const questions = [
     ],
     correctChoiceId: "a",
     explanation: "「〜てみたい」= ~해보고 싶다. 「と思っています」= ~라고 생각하고 있습니다.",
+    vocabIds: ["gaikoku"],
     tags: ["expression", "desire", "reading", "n4"],
   },
   {
@@ -867,6 +903,7 @@ export const questions = [
     ],
     correctChoiceId: "a",
     explanation: "「だから」= 그래서(원인→결과). 비가 오기 때문에 나가지 않는다는 인과 관계.",
+    vocabIds: ["ame"],
     tags: ["conjunction", "reason", "n4"],
   },
   {
@@ -899,6 +936,7 @@ export const questions = [
     ],
     correctChoiceId: "a",
     explanation: "「そして」= 그리고. 두 긍정적인 내용을 연결합니다.",
+    vocabIds: ["shinsetsu", "atama"],
     tags: ["conjunction", "n4"],
   },
   {
@@ -915,6 +953,7 @@ export const questions = [
     ],
     correctChoiceId: "a",
     explanation: "「でも」= 하지만(역접). 비싸지만 맛있다는 대조 표현.",
+    vocabIds: ["takai"],
     tags: ["conjunction", "contrast", "n4"],
   },
   {
@@ -947,6 +986,7 @@ export const questions = [
     ],
     correctChoiceId: "a",
     explanation: "「〜から」= ~이기 때문에. 앞이 이유, 뒤가 결과.",
+    vocabIds: ["atama", "gakko"],
     tags: ["conjunction", "reason", "reading", "n4"],
   },
   {
@@ -979,6 +1019,7 @@ export const questions = [
     ],
     correctChoiceId: "a",
     explanation: "「〜ので」= ~이기 때문에. 이유·원인을 부드럽게 나타냅니다.",
+    vocabIds: ["jikan"],
     tags: ["conjunction", "reason", "node", "n4"],
   },
   {
@@ -995,6 +1036,7 @@ export const questions = [
     ],
     correctChoiceId: "a",
     explanation: "「〜ので」= ~이기 때문에. 「遅刻する」= 지각하다.",
+    vocabIds: ["densha", "kaigi", "chikoku"],
     tags: ["conjunction", "reason", "reading", "n4"],
   },
   {
@@ -1011,6 +1053,7 @@ export const questions = [
     ],
     correctChoiceId: "a",
     explanation: "「それに」= 게다가. 긍정적인 내용을 추가할 때 사용합니다.",
+    vocabIds: ["shigoto"],
     tags: ["conjunction", "addition", "n4"],
   },
 
@@ -1029,13 +1072,14 @@ export const questions = [
     ],
     correctChoiceId: "a",
     explanation: "「雨だったので」= 비였기 때문에. 昨日 = 어제.",
+    vocabIds: ["kinou", "ame", "ie", "eiga"],
     tags: ["reading", "n4"],
   },
   {
     id: "q064",
     category: "reading",
     level: 3,
-    prompt: "다음 문장의 내용과 일치하는 것은?\n田中さんは毎朝6時に起きて、7時に会社へ行きます。",
+    prompt: "다음 문장의 내용과 일치하는 것은?\n田中さんは毎日6時に起きて、7時に会社へ行きます。",
     promptType: "text",
     choices: [
       { id: "a", text: "다나카 씨는 매일 아침 6시에 일어납니다." },
@@ -1045,6 +1089,7 @@ export const questions = [
     ],
     correctChoiceId: "a",
     explanation: "「毎朝6時に起きて」= 매일 아침 6시에 일어나서.",
+    vocabIds: ["mainichi", "kaisha"],
     tags: ["reading", "n4"],
   },
   {
@@ -1061,6 +1106,7 @@ export const questions = [
     ],
     correctChoiceId: "a",
     explanation: "「上手(じょうず)」= 잘함. 「苦手(にがて)」= 잘 못함. 「が」= 하지만(역접).",
+    vocabIds: ["uta", "jozu", "nigate"],
     tags: ["reading", "n4"],
   },
   {
@@ -1077,6 +1123,7 @@ export const questions = [
     ],
     correctChoiceId: "a",
     explanation: "「少し不安でしたが、とても楽しかった」= 조금 불안했지만, 매우 즐거웠다.",
+    vocabIds: ["kaigai", "ryoko"],
     tags: ["reading", "n4"],
   },
   {
@@ -1093,6 +1140,7 @@ export const questions = [
     ],
     correctChoiceId: "a",
     explanation: "「〜なければならない」= ~해야 한다. 「〜ので」= ~이기 때문에.",
+    vocabIds: ["ashita"],
     tags: ["reading", "obligation", "n4"],
   },
   {
@@ -1109,6 +1157,7 @@ export const questions = [
     ],
     correctChoiceId: "a",
     explanation: "「家で料理をします」= 집에서 요리를 합니다.",
+    vocabIds: ["ryori", "shumatsu", "ie"],
     tags: ["reading", "n4"],
   },
   {
@@ -1125,6 +1174,7 @@ export const questions = [
     ],
     correctChoiceId: "a",
     explanation: "「〜たことがあります」= ~한 적이 있다. 「あまり〜ません」= 별로 ~하지 않는다.",
+    vocabIds: ["nihongo", "benkyo"],
     tags: ["reading", "experience", "n4"],
   },
   {
@@ -1141,6 +1191,7 @@ export const questions = [
     ],
     correctChoiceId: "a",
     explanation: "「お店が閉まっていました」= 가게가 문을 닫고 있었습니다. 결국 못 산 것으로 이해할 수 있습니다.",
+    vocabIds: ["tomodachi", "tanjobi", "mise"],
     tags: ["reading", "n4"],
   },
   {
@@ -1157,6 +1208,7 @@ export const questions = [
     ],
     correctChoiceId: "a",
     explanation: "「〜も〜も話せる」= ~도 ~도 말할 수 있다. 「役に立つ」= 도움이 되다.",
+    vocabIds: ["nihongo", "eigo", "shigoto"],
     tags: ["reading", "n4"],
   },
   {
@@ -1173,6 +1225,7 @@ export const questions = [
     ],
     correctChoiceId: "a",
     explanation: "「引っ越してから」= 이사하고 나서. 「自転車で来るようになりました」= 자전거로 오게 됐습니다.",
+    vocabIds: ["mainichi", "jitensha"],
     tags: ["reading", "n4"],
   },
   {
@@ -1189,6 +1242,7 @@ export const questions = [
     ],
     correctChoiceId: "a",
     explanation: "「褒められた」= 칭찬 받았다(수동형). 「頑張ろうと思います」= 열심히 하려고 생각합니다.",
+    vocabIds: ["sensei"],
     tags: ["reading", "passive", "n4"],
   },
   {
@@ -1205,6 +1259,7 @@ export const questions = [
     ],
     correctChoiceId: "a",
     explanation: "「大学院に進学するつもり」= 대학원에 진학할 생각. 「そのために」= 그것을 위해.",
+    vocabIds: ["rainen", "daigakuin", "nihongo"],
     tags: ["reading", "intention", "n4"],
   },
 ];

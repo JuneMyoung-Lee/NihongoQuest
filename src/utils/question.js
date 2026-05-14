@@ -65,6 +65,31 @@ export function getTrialQuestionsByStage(stage, questions, count = 5) {
   }));
 }
 
+// vocabIds 배열로 vocabulary 객체에서 항목 조회. 없는 id는 경고 후 제외.
+export function getVocabularyByIds(vocabIds, vocabulary) {
+  if (!Array.isArray(vocabIds) || vocabIds.length === 0 || !vocabulary) return [];
+  return vocabIds.reduce((acc, id) => {
+    if (vocabulary[id]) {
+      acc.push(vocabulary[id]);
+    } else {
+      console.warn(`[vocab] 존재하지 않는 vocabulary ID: "${id}"`);
+    }
+    return acc;
+  }, []);
+}
+
+// vocabItems 내 kanji 배열을 모아 char 기준 중복 제거 후 반환.
+export function getKanjiNotesFromVocabulary(vocabItems) {
+  if (!Array.isArray(vocabItems) || vocabItems.length === 0) return [];
+  const seen = new Set();
+  return vocabItems.flatMap((item) => (Array.isArray(item.kanji) ? item.kanji : [])).filter((k) => {
+    if (!k || !k.char) return false;
+    if (seen.has(k.char)) return false;
+    seen.add(k.char);
+    return true;
+  });
+}
+
 // 기존 코드와의 하위 호환 유지 (validate 등에서 사용)
 export function getQuestionsByStage(stage, questions) {
   if (!stage || !stage.questionIds || !questions) return [];

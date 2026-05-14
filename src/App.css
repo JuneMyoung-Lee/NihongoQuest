@@ -471,3 +471,98 @@ body {
 
 .trial-pass-card { background: rgba(14,165,233,0.1); border-color: rgba(14,165,233,0.3); }
 .trial-pass-msg { text-align: center; font-weight: 600; font-size: 0.9rem; color: #38bdf8; }
+
+/* ── VocabNotesPanel ───────────────────────────────────────────── */
+.vocab-notes-panel {
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(139,92,246,0.2);
+  background: rgba(139,92,246,0.06);
+  overflow: hidden;
+  margin-top: 6px;
+}
+
+.vocab-section {
+  padding: 10px 12px;
+}
+.vocab-section + .vocab-section {
+  border-top: 1px solid rgba(255,255,255,0.07);
+}
+
+.vocab-section-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #a78bfa;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+
+/* 단어 노트 */
+.vocab-list { display: flex; flex-direction: column; gap: 5px; }
+.vocab-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.vocab-surface {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+  min-width: 0;
+}
+.vocab-reading {
+  font-size: 0.8rem;
+  color: #93c5fd;
+  font-weight: 500;
+}
+.vocab-meaning {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+/* 한자 노트 */
+.kanji-section { background: rgba(0,0,0,0.12); }
+.kanji-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.kanji-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.kanji-char {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #fbbf24;
+  min-width: 1.4rem;
+  text-align: center;
+  flex-shrink: 0;
+}
+.kanji-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  flex: 1;
+  min-width: 0;
+}
+.kanji-meaning {
+  font-size: 0.78rem;
+  color: var(--text);
+  font-weight: 500;
+}
+.kanji-reading-word {
+  font-size: 0.75rem;
+  color: #93c5fd;
+  background: rgba(147,197,253,0.1);
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+.kanji-onyomi {
+  font-size: 0.7rem;
+  color: var(--muted);
+}
