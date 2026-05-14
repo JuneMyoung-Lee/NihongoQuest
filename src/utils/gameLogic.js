@@ -127,3 +127,58 @@ export function getNextStage(currentStageId, stages, player) {
   if (!isStageUnlocked(next, player)) return null;
   return next;
 }
+
+// JLPT 그룹 유틸 ──────────────────────────────────────────────────
+export const JLPT_LEVELS = ["N5", "N4", "N3", "N2", "N1"];
+
+export const JLPT_INFO = {
+  N5: { area: "기초 지역", desc: "일본어의 첫걸음을 내딛는다" },
+  N4: { area: "활용 지역", desc: "동사·형용사 활용의 세계" },
+  N3: { area: "표현 지역", desc: "연결·이유·경험 표현의 숲" },
+  N2: { area: "독해 지역", desc: "복합 문법과 논리 독해" },
+  N1: { area: "고급 지역", desc: "고급 표현의 심연" },
+};
+
+// jlptLevel 기준으로 스테이지를 그룹화, 그룹 내 stageOrderInGroup 순 정렬.
+export function groupStagesByJlpt(stages) {
+  if (!Array.isArray(stages)) return Object.fromEntries(JLPT_LEVELS.map((l) => [l, []]));
+  const groups = Object.fromEntries(JLPT_LEVELS.map((l) => [l, []]));
+  stages.forEach((stage) => {
+    const level = JLPT_LEVELS.includes(stage.jlptLevel) ? stage.jlptLevel : "N4";
+    groups[level].push(stage);
+  });
+  JLPT_LEVELS.forEach((level) => {
+    groups[level].sort((a, b) => {
+      const ao = a.stageOrderInGroup ?? a.order ?? 999;
+      const bo = b.stageOrderInGroup ?? b.order ?? 999;
+      return ao - bo;
+    });
+  });
+  return groups;
+}
+
+// 각 JLPT 그룹별 { total, cleared } 반환.
+export function getJlptProgress(stages, player) {
+  const groups = groupStagesByJlpt(stages);
+  return Object.fromEntries(
+    JLPT_LEVELS.map((level) => {
+      const ls = groups[level];
+      return [level, {
+        total: ls.length,
+        cleared: ls.filter((s) => Array.isArray(player?.clearedStageIds) && player.clearedStageIds.includes(s.id)).length,
+      }];
+    })
+  );
+}
+
+// 진행 가능한 미완료 스테이지가 있는 가장 낮은 JLPT 그룹 반환.
+export function getDefaultJlptLevel(stages, player) {
+  const groups = groupStagesByJlpt(stages);
+  for (const level of JLPT_LEVELS) {
+    const hasProgress = groups[level].some(
+      (s) => isStageUnlocked(s, player) && !(player?.clearedStageIds ?? []).includes(s.id)
+    );
+    if (hasProgress) return level;
+  }
+  return "N5";
+}

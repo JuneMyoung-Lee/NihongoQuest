@@ -1,7 +1,7 @@
 import { useState } from "react";
 import ProgressBar from "./ProgressBar";
 import ThemeToggle from "./ThemeToggle";
-import { getRequiredExp, getTodayQuestStage } from "../utils/gameLogic";
+import { getRequiredExp, getTodayQuestStage, getJlptProgress, JLPT_LEVELS } from "../utils/gameLogic";
 
 const SHOP_ITEMS = [
   { key: "hints", label: "힌트 티켓", emoji: "💡", price: 15, desc: "오답 선택지 1개를 숨겨줍니다" },
@@ -14,6 +14,7 @@ export default function HomeScreen({ player, stages, onStartQuest, onGoStageSele
 
   const requiredExp = getRequiredExp(player.level);
   const todayStage = getTodayQuestStage(stages, player);
+  const jlptProgress = getJlptProgress(stages, player);
   const noStages = !stages || stages.length === 0;
   const totalStages = stages?.length ?? 0;
   const clearedCount = player.clearedStageIds?.length ?? 0;
@@ -68,6 +69,26 @@ export default function HomeScreen({ player, stages, onStartQuest, onGoStageSele
           <span className="inv-item">💡 힌트 {inventory.hints}개</span>
           <span className="inv-item">💊 포션 {inventory.potions}개</span>
           <span className="inv-item">🔑 도약증표 {inventory.trialTickets}개</span>
+        </div>
+      </div>
+
+      {/* JLPT 진행도 */}
+      <div className="card jlpt-home-card">
+        <div className="card-title">📊 JLPT 진행도</div>
+        <div className="jlpt-home-grid">
+          {JLPT_LEVELS.map((level) => {
+            const p = jlptProgress[level] ?? { total: 0, cleared: 0 };
+            const allDone = p.total > 0 && p.cleared === p.total;
+            return (
+              <div key={level} className={`jlpt-home-item${allDone ? " jlpt-home-item-done" : ""}`}>
+                <span className={`jlpt-level-badge jlpt-badge-sm jlpt-${level}`}>{level}</span>
+                <div className="jlpt-home-nums">
+                  <span className="jlpt-home-cleared">{p.cleared}</span>
+                  <span className="jlpt-home-total">/{p.total}</span>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 

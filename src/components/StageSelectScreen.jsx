@@ -1,35 +1,98 @@
-import { isStageUnlocked, canAttemptTrial } from "../utils/gameLogic";
+import { useState } from "react";
+import ProgressBar from "./ProgressBar";
+import {
+  isStageUnlocked, canAttemptTrial,
+  groupStagesByJlpt, getJlptProgress, getDefaultJlptLevel,
+  JLPT_LEVELS, JLPT_INFO,
+} from "../utils/gameLogic";
 
 export default function StageSelectScreen({ player, stages, onStartStage, onStartTrial, onGoHome }) {
+  const groupedStages = groupStagesByJlpt(stages);
+  const jlptProgress = getJlptProgress(stages, player);
+  const [selectedLevel, setSelectedLevel] = useState(() => getDefaultJlptLevel(stages, player));
+
+  const currentStages = groupedStages[selectedLevel] ?? [];
+  const info = JLPT_INFO[selectedLevel] ?? { area: selectedLevel, desc: "" };
+  const prog = jlptProgress[selectedLevel] ?? { total: 0, cleared: 0 };
+
   return (
     <div className="screen">
       <header className="screen-header">
         <button className="btn btn-ghost btn-small" onClick={onGoHome}>← 홈</button>
         <h2 className="screen-title">스테이지 선택</h2>
       </header>
+      <p className="stage-select-subtitle">JLPT 레벨별로 도전하세요</p>
 
+      {/* JLPT 탭 바 */}
+      <div className="jlpt-tab-bar">
+        {JLPT_LEVELS.map((level) => {
+          const p = jlptProgress[level] ?? { total: 0, cleared: 0 };
+          const allCleared = p.total > 0 && p.cleared === p.total;
+          const isActive = selectedLevel === level;
+          return (
+            <button
+              key={level}
+              className={`jlpt-tab${isActive ? " jlpt-tab-active" : ""}${allCleared ? " jlpt-tab-done" : ""}`}
+              onClick={() => setSelectedLevel(level)}
+              aria-pressed={isActive}
+            >
+              <span className="jlpt-tab-label">{level}</span>
+              <span className="jlpt-tab-progress">{p.cleared}/{p.total}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* 그룹 헤더 */}
+      <div className="jlpt-group-header">
+        <div className="jlpt-group-top">
+          <span className={`jlpt-level-badge jlpt-${selectedLevel}`}>{selectedLevel}</span>
+          <div className="jlpt-group-text">
+            <div className="jlpt-group-area">{info.area}</div>
+            <div className="jlpt-group-desc">{info.desc}</div>
+          </div>
+          <div className="jlpt-group-count">
+            {prog.cleared}/{prog.total} 클리어
+          </div>
+        </div>
+        {prog.total > 0 && (
+          <ProgressBar current={prog.cleared} max={prog.total} colorClass="jlpt-progress-bar" />
+        )}
+      </div>
+
+      {currentStages.length === 0 && (
+        <p className="jlpt-empty">이 레벨에 스테이지가 없습니다.</p>
+      )}
+
+      {/* 스테이지 카드 목록 */}
       <div className="stage-list">
-        {stages.map((stage) => {
-          const unlocked = isStageUnlocked(stage, player);
-          const cleared = player.clearedStageIds?.includes(stage.id);
-          const trialUnlocked = !cleared && player.unlockedStageIds?.includes(stage.id);
+        {currentStages.map((stage) => {
+          const isUnlocked = isStageUnlocked(stage, player);
+          const isCleared = player.clearedStageIds?.includes(stage.id);
+          const isTrialUnlocked = !isCleared && player.unlockedStageIds?.includes(stage.id);
           const canTrial = canAttemptTrial(stage, player);
-          const progress = player.stageProgress?.[stage.id];
+          const stageProgress = player.stageProgress?.[stage.id];
+          const accessible = isUnlocked || isCleared;
 
           let statusLabel = "잠김 🔒";
           let statusClass = "status-locked";
-          if (cleared) { statusLabel = "클리어 ✅"; statusClass = "status-cleared"; }
-          else if (trialUnlocked) { statusLabel = "도약 해금 🔓"; statusClass = "status-trial"; }
-          else if (unlocked) { statusLabel = "도전 가능 ⚔️"; statusClass = "status-available"; }
+          if (isCleared) { statusLabel = "클리어 ✅"; statusClass = "status-cleared"; }
+          else if (isTrialUnlocked) { statusLabel = "도약 해금 🔓"; statusClass = "status-trial"; }
+          else if (isUnlocked) { statusLabel = "도전 가능 ⚔️"; statusClass = "status-available"; }
+
+          const diffClass = `diff-${stage.difficulty?.replace("+", "plus").replace("-", "minus") ?? ""}`;
 
           return (
-            <div key={stage.id} className={`card stage-card monster-card theme-${stage.monster.theme} ${!unlocked ? "stage-card-locked" : ""}`}>
+            <div
+              key={stage.id}
+              className={`card stage-card monster-card theme-${stage.monster.theme}${!accessible ? " stage-card-locked" : ""}`}
+            >
               <div className="stage-card-header">
                 <div className="stage-order-wrap">
-                  <span className="stage-order">Stage {stage.order}</span>
-                  <span className={`difficulty-badge diff-${stage.difficulty?.replace("+", "plus").replace("-", "minus")}`}>
-                    {stage.difficulty}
+                  <span className={`jlpt-level-badge jlpt-badge-sm jlpt-${stage.jlptLevel ?? "N4"}`}>
+                    {stage.jlptLevel ?? "N4"}
                   </span>
+                  <span className={`difficulty-badge ${diffClass}`}>{stage.difficulty}</span>
                 </div>
                 <span className={`stage-status ${statusClass}`}>{statusLabel}</span>
               </div>
@@ -47,31 +110,28 @@ export default function StageSelectScreen({ player, stages, onStartStage, onStar
               <div className="stage-meta">
                 <span>👾 {stage.monster.name} (HP {stage.monster.hp})</span>
                 <span>🎁 EXP +{stage.rewards.exp} / 💰 +{stage.rewards.gold}G</span>
-                {stage.recommendedLevel && (
-                  <span>⭐ 권장 Lv.{stage.recommendedLevel}</span>
-                )}
+                {stage.recommendedLevel && <span>⭐ 권장 Lv.{stage.recommendedLevel}</span>}
               </div>
 
-              {/* 스테이지 기록 */}
-              {progress && (
+              {stageProgress && (
                 <div className="stage-record">
-                  <span>🎯 최고 {progress.bestAccuracy}%</span>
-                  <span>🔁 {progress.attempts}회 도전</span>
-                  {progress.perfectCleared && <span className="perfect-badge">PERFECT</span>}
+                  <span>🎯 최고 {stageProgress.bestAccuracy}%</span>
+                  <span>🔁 {stageProgress.attempts}회 도전</span>
+                  {stageProgress.perfectCleared && <span className="perfect-badge">PERFECT</span>}
                 </div>
               )}
 
               <div className="stage-btn-group">
-                {unlocked && (
+                {accessible && (
                   <button
-                    className={`btn ${cleared ? "btn-secondary" : "btn-primary"} btn-full`}
+                    className={`btn ${isCleared ? "btn-secondary" : "btn-primary"} btn-full`}
                     onClick={() => onStartStage(stage.id)}
                   >
-                    {cleared ? "🔄 다시 도전" : "⚔️ 도전하기"}
+                    {isCleared ? "🔄 다시 도전" : "⚔️ 도전하기"}
                   </button>
                 )}
 
-                {!unlocked && canTrial && (
+                {!accessible && canTrial && (
                   <button
                     className="btn btn-outline btn-full"
                     onClick={() => onStartTrial(stage.id)}
@@ -81,12 +141,10 @@ export default function StageSelectScreen({ player, stages, onStartStage, onStar
                   </button>
                 )}
 
-                {!unlocked && !canTrial && (
+                {!accessible && !canTrial && (
                   <button className="btn btn-locked btn-full" disabled>
                     🔒 잠김
-                    {stage.order > 3 && (
-                      <span className="btn-sub">Lv.{Math.ceil(stage.order / 2)} 또는 도약의 증표 필요</span>
-                    )}
+                    <span className="btn-sub">이전 스테이지를 클리어해야 합니다</span>
                   </button>
                 )}
               </div>

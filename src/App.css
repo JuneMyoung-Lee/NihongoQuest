@@ -324,9 +324,13 @@ body {
   padding: 2px 8px; border-radius: 99px;
   text-transform: uppercase;
 }
+.diff-N5 { background: rgba(34,197,94,0.15); color: var(--text-success); }
 .diff-N4 { background: rgba(14,165,233,0.15); color: var(--secondary); }
 .diff-N4plus { background: rgba(139,92,246,0.15); color: var(--primary); }
+.diff-N3 { background: rgba(139,92,246,0.15); color: var(--primary); }
 .diff-N3minus { background: rgba(239,68,68,0.15); color: var(--text-danger); }
+.diff-N2 { background: rgba(245,158,11,0.15); color: var(--warning); }
+.diff-N1 { background: rgba(239,68,68,0.18); color: var(--text-danger); }
 
 .stage-monster-row { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
 .stage-monster-emoji { font-size: 2.4rem; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3)); }
@@ -646,3 +650,118 @@ body {
   padding: 1px 6px;
   border: 1px solid var(--border);
 }
+
+/* ── JLPT 레벨 배지 ────────────────────────────────────────────── */
+.jlpt-level-badge {
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 3px 9px;
+  border-radius: 99px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.jlpt-badge-sm { font-size: 0.65rem; padding: 2px 7px; }
+.jlpt-N5 { background: rgba(34,197,94,0.18); color: var(--text-success); }
+.jlpt-N4 { background: rgba(14,165,233,0.18); color: var(--secondary); }
+.jlpt-N3 { background: rgba(139,92,246,0.18); color: var(--primary); }
+.jlpt-N2 { background: rgba(245,158,11,0.18); color: var(--warning); }
+.jlpt-N1 { background: rgba(239,68,68,0.18); color: var(--text-danger); }
+
+/* ── StageSelectScreen JLPT 탭 ────────────────────────────────── */
+.stage-select-subtitle {
+  font-size: 0.8rem;
+  color: var(--muted);
+  text-align: center;
+  margin-top: -4px;
+}
+
+.jlpt-tab-bar {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.jlpt-tab-bar::-webkit-scrollbar { display: none; }
+
+.jlpt-tab {
+  flex: 1;
+  min-width: 54px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 9px 6px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.jlpt-tab:hover { background: var(--surface-strong); }
+.jlpt-tab-label { font-size: 0.82rem; font-weight: 800; color: var(--muted); }
+.jlpt-tab-progress { font-size: 0.65rem; color: var(--muted); }
+
+.jlpt-tab.jlpt-tab-active { border-color: var(--primary); background: rgba(139,92,246,0.1); }
+.jlpt-tab.jlpt-tab-active .jlpt-tab-label { color: var(--primary); }
+.jlpt-tab.jlpt-tab-active .jlpt-tab-progress { color: var(--primary); }
+
+.jlpt-tab.jlpt-tab-done { border-color: var(--text-success); }
+.jlpt-tab.jlpt-tab-done .jlpt-tab-label { color: var(--text-success); }
+
+.jlpt-tab.jlpt-tab-active.jlpt-tab-done {
+  background: rgba(34,197,94,0.1);
+  border-color: var(--text-success);
+}
+
+/* ── JLPT 그룹 헤더 ────────────────────────────────────────────── */
+.jlpt-group-header {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+}
+.jlpt-group-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.jlpt-group-text { flex: 1; min-width: 0; }
+.jlpt-group-area { font-size: 0.9rem; font-weight: 700; color: var(--text); }
+.jlpt-group-desc { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+.jlpt-group-count { font-size: 0.82rem; font-weight: 700; color: var(--primary); white-space: nowrap; }
+
+.jlpt-progress-bar .progress-bar-fill { background: var(--primary); }
+
+.jlpt-empty { text-align: center; color: var(--muted); font-size: 0.9rem; padding: 24px 0; }
+
+/* ── HomeScreen JLPT 진행도 카드 ───────────────────────────────── */
+.jlpt-home-grid {
+  display: flex;
+  gap: 6px;
+  justify-content: space-between;
+}
+.jlpt-home-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 4px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-strong);
+  border: 1px solid var(--border);
+  transition: border-color 0.15s;
+}
+.jlpt-home-item-done {
+  border-color: var(--text-success);
+  background: rgba(34,197,94,0.07);
+}
+.jlpt-home-nums { display: flex; align-items: baseline; gap: 1px; line-height: 1; }
+.jlpt-home-cleared { font-size: 1rem; font-weight: 800; color: var(--text); }
+.jlpt-home-total { font-size: 0.7rem; color: var(--muted); }
+.jlpt-home-item-done .jlpt-home-cleared { color: var(--text-success); }
