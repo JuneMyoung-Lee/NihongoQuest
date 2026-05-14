@@ -78,17 +78,6 @@ export function getVocabularyByIds(vocabIds, vocabulary) {
   }, []);
 }
 
-// vocabItems 내 kanji 배열을 모아 char 기준 중복 제거 후 반환.
-export function getKanjiNotesFromVocabulary(vocabItems) {
-  if (!Array.isArray(vocabItems) || vocabItems.length === 0) return [];
-  const seen = new Set();
-  return vocabItems.flatMap((item) => (Array.isArray(item.kanji) ? item.kanji : [])).filter((k) => {
-    if (!k || !k.char) return false;
-    if (seen.has(k.char)) return false;
-    seen.add(k.char);
-    return true;
-  });
-}
 
 // 기존 코드와의 하위 호환 유지 (validate 등에서 사용)
 export function getQuestionsByStage(stage, questions) {

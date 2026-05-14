@@ -1,5 +1,17 @@
 import { useState } from "react";
 
+const TYPE_LABEL = {
+  noun: "명사",
+  verb: "동사",
+  i_adj: "い형용사",
+  na_adj: "な형용사",
+  pronoun: "대명사",
+  proper_noun: "고유명사",
+  expression: "표현",
+  conjunction: "접속사",
+  adverb: "부사",
+};
+
 // text를 vocab surface 기준으로 세그먼트 배열로 파싱.
 // 긴 surface 우선 매칭, \n은 newline 세그먼트로 변환.
 function parseSegments(text, vocabItems) {
@@ -56,8 +68,6 @@ function parseSegments(text, vocabItems) {
 }
 
 function VocabWordCard({ vocab, onClose }) {
-  const hasKanji = Array.isArray(vocab.kanji) && vocab.kanji.length > 0;
-
   return (
     <div className="vocab-word-card">
       <div className="vocab-word-card-header">
@@ -73,21 +83,8 @@ function VocabWordCard({ vocab, onClose }) {
         </button>
       </div>
       <div className="vocab-word-card-meaning">{vocab.meaning ?? ""}</div>
-
-      {hasKanji && (
-        <div className="vocab-word-card-kanji">
-          {vocab.kanji.map((k) =>
-            k && k.char ? (
-              <div key={k.char} className="vocab-word-card-kanji-row">
-                <span className="vocab-word-card-kanji-char">{k.char}</span>
-                <span className="vocab-word-card-kanji-detail">
-                  {k.meaning ?? ""}
-                  {k.readingInWord ? ` ／ ${k.readingInWord}` : ""}
-                </span>
-              </div>
-            ) : null
-          )}
-        </div>
+      {vocab.type && TYPE_LABEL[vocab.type] && (
+        <div className="vocab-word-card-type">{TYPE_LABEL[vocab.type]}</div>
       )}
     </div>
   );

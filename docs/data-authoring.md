@@ -10,39 +10,26 @@
 
 ```js
 // 키: 고유 id (영문 소문자, camelCase 권장)
-shukudai: {
-  id: "shukudai",           // 키와 동일하게 설정
-  surface: "宿題",          // 실제 문장에서 사용하는 표기. 매칭 기준이 됨
-  reading: "しゅくだい",
-  meaning: "숙제",
-  type: "noun",             // noun | verb | i_adj | na_adj | pronoun | proper_noun
-  kanji: [
-    {
-      char: "宿",
-      meaning: "숙소, 묵다",
-      readingInWord: "しゅく",  // 이 단어 안에서의 발음
-      onyomi: "シュク",
-      kunyomi: "やど・やどる",
-    },
-    {
-      char: "題",
-      meaning: "제목, 문제",
-      readingInWord: "だい",
-      onyomi: "ダイ",
-      kunyomi: "",
-    },
-  ],
+eiga: {
+  id: "eiga",
+  surface: "映画",       // 문제 문장에 실제로 등장하는 문자열
+  reading: "えいが",     // 단어 전체 발음
+  meaning: "영화",       // 문맥상 자연스러운 한국어 뜻
+  type: "noun",          // noun | verb | i_adj | na_adj | pronoun | proper_noun | expression | conjunction | adverb (선택)
 },
 ```
 
-### 규칙
+### 핵심 규칙
 
 - **surface는 prompt 안의 문자열과 정확히 일치해야 한다.**  
-  예: prompt에 `宿題を出す`가 있으면 surface는 `宿題`이어야 하며, `宿 題`(공백 포함)이면 매칭되지 않는다.
-- **같은 단어는 vocabulary.js에서 재사용한다.** 여러 문제에서 동일한 단어가 나와도 vocabulary 항목은 하나만 작성한다.
-- **긴 단어를 우선 등록하는 것이 좋다.**  
-  텍스트 매칭은 긴 surface 우선 방식으로 동작한다. `映画`와 `画` 모두 등록되어 있으면 `映画`가 먼저 매칭된다.
-- kanji 배열이 없거나 비어 있어도 동작한다. (히라가나/가타카나 단어에는 빈 배열 또는 생략 가능)
+  예: prompt에 `映画を見ます`가 있으면 surface는 `映画`이어야 함.
+- **reading은 단어 전체 발음을 히라가나로 적는다.**  
+  `映画` → `えいが`
+- **meaning은 문맥상 자연스러운 한국어로 적는다.**
+- **개별 한자 정보(kanji 필드)는 필수가 아니다.** 넣지 않아도 된다.
+- **같은 단어는 vocabulary.js에서 재사용한다.** 여러 문제에서 같은 단어가 나와도 항목은 하나만.
+- **긴 단어를 먼저 등록하는 것이 좋다.**  
+  텍스트 매칭은 긴 surface 우선 방식으로 동작한다. `映画`와 `画` 모두 등록되면 `映画`가 먼저 매칭된다.
 
 ---
 
@@ -80,7 +67,7 @@ shukudai: {
 
 1. `vocabulary.js`에서 해당 단어의 키를 확인한다.
 2. `vocabIds` 배열에 그 키를 추가한다.
-3. **surface가 prompt 안에 없어도 앱은 죽지 않는다** — 단, 툴팁 강조가 작동하지 않는다. explanation이나 선택지에만 쓰이는 단어는 vocabIds에 포함해도 되지만, AnnotatedText에서는 매칭되지 않는다.
+3. **surface가 prompt 안에 없어도 앱은 죽지 않는다** — 단, 클릭 툴팁 강조가 작동하지 않는다. 해설이나 선택지에만 쓰이는 단어도 vocabIds에 포함해서 단어 노트에 표시할 수 있다.
 4. 앱 시작 시 `validateVocabulary`가 자동으로 검증하고 문제가 있으면 console.warn을 출력한다.
 
 ---
@@ -108,28 +95,55 @@ shukudai: {
 
 ### questionIds와 questionCount
 
-- `questionIds`: 이 스테이지에서 출제될 **후보 풀** 전체 목록. 실제 출제 수보다 많게 유지하면 매 도전마다 다른 문제가 나온다.
+- `questionIds`: 이 스테이지에서 출제될 **후보 풀** 전체 목록.
 - `questionCount`: 후보 풀에서 실제로 출제할 수. 생략하거나 0이면 후보 풀 전체를 출제한다.
 - 예: `questionIds`에 10개, `questionCount: 6` → 매 도전마다 10개 중 6개 랜덤 출제.
 
 ---
 
-## 4. 데이터 흐름 요약
+## 4. 단어 노트 표시 방식
+
+답변 후 문제 화면에 **단어 노트**가 표시된다.
+
+```
+[단어 노트]
+
+映画  えいが  영화  명사
+昨日  きのう  어제  명사
+勉強  べんきょう  공부  명사
+```
+
+- `surface` / `reading` / `meaning` 순서로 한 줄에 표시된다.
+- `type` 필드가 있으면 품사가 작게 표시된다.
+- 개별 한자 정보는 표시되지 않는다.
+
+문제 문장 안 밑줄 단어를 탭하면 **단어 카드**가 인라인으로 열린다.
+
+```
+映画
+えいが
+영화
+명사
+```
+
+---
+
+## 5. 데이터 흐름 요약
 
 ```
 stages.js (questionIds 후보 풀 + questionCount)
     ↓ getRandomQuestionsByStage()
 questions.js (각 문제에 vocabIds 배열 포함)
     ↓ getVocabularyByIds()
-vocabulary.js (surface, reading, meaning, kanji)
+vocabulary.js (surface, reading, meaning, type)
     ↓
-AnnotatedText     → 문제 문장 안 단어 클릭 툴팁
-VocabNotesPanel   → 답변 후 단어/한자 노트 표시
+AnnotatedText     → 문제 문장 안 단어 클릭 → 단어 카드
+VocabNotesPanel   → 답변 후 단어 노트 표시
 ```
 
 ---
 
-## 5. 검증
+## 6. 검증
 
 앱 시작 시 아래 함수들이 자동 실행되어 console에 경고를 출력합니다. 앱은 계속 동작합니다.
 

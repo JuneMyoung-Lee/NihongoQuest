@@ -560,30 +560,14 @@ body {
   color: var(--muted);
   margin-bottom: 6px;
 }
-.vocab-word-card-kanji {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding-top: 7px;
-  border-top: 1px solid rgba(255,255,255,0.08);
-}
-.vocab-word-card-kanji-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-.vocab-word-card-kanji-char {
-  font-size: 1rem;
-  font-weight: 800;
-  color: #fbbf24;
-  min-width: 1.3rem;
-  text-align: center;
-  flex-shrink: 0;
-}
-.vocab-word-card-kanji-detail {
-  font-size: 0.775rem;
+.vocab-word-card-type {
+  font-size: 0.72rem;
   color: var(--muted);
+  background: rgba(255,255,255,0.06);
+  border-radius: 4px;
+  padding: 1px 7px;
+  display: inline-block;
+  margin-top: 2px;
 }
 
 /* ── VocabNotesPanel ───────────────────────────────────────────── */
@@ -634,49 +618,10 @@ body {
   font-size: 0.8rem;
   color: var(--muted);
 }
-
-/* 한자 노트 */
-.kanji-section { background: rgba(0,0,0,0.12); }
-.kanji-list {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-.kanji-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-.kanji-char {
-  font-size: 1.05rem;
-  font-weight: 800;
-  color: #fbbf24;
-  min-width: 1.4rem;
-  text-align: center;
-  flex-shrink: 0;
-}
-.kanji-info {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
-  flex: 1;
-  min-width: 0;
-}
-.kanji-meaning {
-  font-size: 0.78rem;
-  color: var(--text);
-  font-weight: 500;
-}
-.kanji-reading-word {
-  font-size: 0.75rem;
-  color: #93c5fd;
-  background: rgba(147,197,253,0.1);
-  border-radius: 4px;
-  padding: 1px 5px;
-}
-.kanji-onyomi {
+.vocab-type {
   font-size: 0.7rem;
   color: var(--muted);
+  background: rgba(255,255,255,0.05);
+  border-radius: 4px;
+  padding: 1px 6px;
 }

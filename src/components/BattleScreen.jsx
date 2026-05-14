@@ -2,7 +2,7 @@ import ProgressBar from "./ProgressBar";
 import VocabNotesPanel from "./VocabNotesPanel";
 import AnnotatedText from "./AnnotatedText";
 import { vocabulary } from "../data/vocabulary";
-import { getVocabularyByIds, getKanjiNotesFromVocabulary } from "../utils/question";
+import { getVocabularyByIds } from "../utils/question";
 
 export default function BattleScreen({ battleState, setBattleState, player, stages, onBattleEnd, onUseItem, onExit }) {
   const stage = stages.find((s) => s.id === battleState.stageId);
@@ -25,7 +25,6 @@ export default function BattleScreen({ battleState, setBattleState, player, stag
     : stage.monster;
 
   const vocabItems = getVocabularyByIds(currentQuestion.vocabIds, vocabulary);
-  const kanjiNotes = getKanjiNotesFromVocabulary(vocabItems);
 
   function handleChoiceClick(choiceId) {
     if (hasAnswered) return;
@@ -172,7 +171,7 @@ export default function BattleScreen({ battleState, setBattleState, player, stag
           </div>
         )}
 
-        {hasAnswered && <VocabNotesPanel vocabItems={vocabItems} kanjiNotes={kanjiNotes} />}
+        {hasAnswered && <VocabNotesPanel vocabItems={vocabItems} />}
 
         {!hasAnswered && feedbackMessage && (
           <div className="feedback-box feedback-info">
