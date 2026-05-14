@@ -1,3 +1,71 @@
+// Fisher-Yates 셔플. 원본 배열을 변경하지 않고 새 배열 반환.
+export function shuffleArray(array) {
+  if (!Array.isArray(array) || array.length === 0) return [];
+  const arr = [...array];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+// 전투 시작용: 후보 풀에서 questionCount개 랜덤 추출 + choices 셔플.
+// 원본 question 객체는 mutation하지 않음.
+export function getRandomQuestionsByStage(stage, questions) {
+  if (!stage || !stage.questionIds || !questions) return [];
+
+  const questionMap = new Map(questions.map((q) => [q.id, q]));
+
+  // 1. 후보 조회 (없는 ID는 경고 후 제외)
+  const pool = stage.questionIds.reduce((acc, id) => {
+    if (questionMap.has(id)) {
+      acc.push(questionMap.get(id));
+    } else {
+      console.warn(`[question] 스테이지 "${stage.id}"에 존재하지 않는 문제 ID: ${id}`);
+    }
+    return acc;
+  }, []);
+
+  // 2. 풀 셔플
+  const shuffledPool = shuffleArray(pool);
+
+  // 3. questionCount개만큼 slice
+  //    - questionCount 없거나 0 이하 → 전체 사용
+  //    - questionCount > pool.length → 가능한 전체 사용
+  const count =
+    stage.questionCount && stage.questionCount > 0
+      ? Math.min(stage.questionCount, shuffledPool.length)
+      : shuffledPool.length;
+
+  const selected = shuffledPool.slice(0, count);
+
+  // 4. 각 문제의 choices도 셔플 (새 객체로 복사, 원본 mutation 없음)
+  return selected.map((q) => ({
+    ...q,
+    choices: shuffleArray(q.choices),
+  }));
+}
+
+// 도약 시험용: 후보 풀에서 최대 count개 랜덤 추출 + choices 셔플.
+export function getTrialQuestionsByStage(stage, questions, count = 5) {
+  if (!stage || !stage.questionIds || !questions) return [];
+
+  const questionMap = new Map(questions.map((q) => [q.id, q]));
+
+  const pool = stage.questionIds.reduce((acc, id) => {
+    if (questionMap.has(id)) acc.push(questionMap.get(id));
+    return acc;
+  }, []);
+
+  const selected = shuffleArray(pool).slice(0, count);
+
+  return selected.map((q) => ({
+    ...q,
+    choices: shuffleArray(q.choices),
+  }));
+}
+
+// 기존 코드와의 하위 호환 유지 (validate 등에서 사용)
 export function getQuestionsByStage(stage, questions) {
   if (!stage || !stage.questionIds || !questions) return [];
   const questionMap = new Map(questions.map((q) => [q.id, q]));
@@ -9,14 +77,6 @@ export function getQuestionsByStage(stage, questions) {
     }
     return acc;
   }, []);
-}
-
-export function getTrialQuestionsByStage(stage, questions, count = 5) {
-  const all = getQuestionsByStage(stage, questions);
-  if (all.length <= count) return all;
-  // 무작위로 count개 선택
-  const shuffled = [...all].sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, count);
 }
 
 export function getCorrectChoiceText(question) {

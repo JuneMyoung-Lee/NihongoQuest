@@ -11,7 +11,7 @@ import {
   canAttemptTrial, applyPurchase, getReplayReward,
   updateStageProgress,
 } from "./utils/gameLogic";
-import { getQuestionsByStage, getTrialQuestionsByStage, validateQuestions, validateStages } from "./utils/question";
+import { getRandomQuestionsByStage, getTrialQuestionsByStage, validateQuestions, validateStages } from "./utils/question";
 
 import HomeScreen from "./components/HomeScreen";
 import StageSelectScreen from "./components/StageSelectScreen";
@@ -47,7 +47,7 @@ export default function App() {
     if (!stage) { setErrorMessage("존재하지 않는 스테이지입니다."); return; }
     if (!isStageUnlocked(stage, player)) { setErrorMessage("아직 해금되지 않은 스테이지입니다."); return; }
 
-    const stageQuestions = getQuestionsByStage(stage, questions);
+    const stageQuestions = getRandomQuestionsByStage(stage, questions);
     if (stageQuestions.length === 0) { setErrorMessage("이 스테이지에 문제가 없습니다."); return; }
 
     setErrorMessage("");
