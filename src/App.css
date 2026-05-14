@@ -493,6 +493,11 @@ body {
   transition: color 0.15s, border-color 0.15s, background 0.15s;
   border-radius: 2px;
 }
+.vocab-term:hover {
+  color: #ddd6fe;
+  border-bottom-color: var(--primary);
+  background: rgba(139,92,246,0.08);
+}
 .vocab-term:active {
   color: #ddd6fe;
   border-bottom-color: var(--primary);

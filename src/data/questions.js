@@ -373,7 +373,7 @@ export const questions = [
       { id: "a", text: "有名だった" },
       { id: "b", text: "有名かった" },
       { id: "c", text: "有名でした" },
-      { id: "d", text: "有名かった" },
+      { id: "d", text: "有名じゃなかった" },
     ],
     correctChoiceId: "a",
     explanation: "な형용사의 과거형: 語幹 + だった. 有名だ → 有名だった. 정중형은 有名でした.",

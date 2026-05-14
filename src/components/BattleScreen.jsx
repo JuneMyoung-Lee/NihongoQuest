@@ -151,7 +151,7 @@ export default function BattleScreen({ battleState, setBattleState, player, stag
 
       {/* 문제 */}
       <div className="card question-card">
-        <AnnotatedText text={currentQuestion.prompt} vocabItems={vocabItems} />
+        <AnnotatedText key={currentQuestion.id} text={currentQuestion.prompt} vocabItems={vocabItems} />
         <div className="choices-grid">
           {currentQuestion.choices.map((choice) => (
             <button
