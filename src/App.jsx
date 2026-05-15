@@ -28,6 +28,13 @@ const SCREEN = {
   RESULT: "result",
 };
 
+function createBattleSessionId() {
+  if (typeof crypto !== "undefined" && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  return `battle_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+}
+
 export default function App() {
   const [screen, setScreen] = useState(SCREEN.HOME);
   const [player, setPlayer] = useState(null);
@@ -64,6 +71,7 @@ export default function App() {
 
     setErrorMessage("");
     setBattleState({
+      battleSessionId: createBattleSessionId(),
       mode: "stage",
       stageId,
       questions: stageQuestions,
@@ -117,6 +125,7 @@ export default function App() {
 
     setErrorMessage("");
     setBattleState({
+      battleSessionId: createBattleSessionId(),
       mode: "trial",
       stageId,
       questions: trialQuestions,
@@ -415,6 +424,7 @@ export default function App() {
 
       {screen === SCREEN.BATTLE && battleState && (
         <BattleScreen
+          key={battleState.battleSessionId}
           battleState={battleState}
           setBattleState={setBattleState}
           player={player}

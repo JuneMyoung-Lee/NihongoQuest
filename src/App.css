@@ -397,73 +397,96 @@ body {
   text-align: center;
 }
 
-/* 전투 필드 (플레이어 | VS | 몬스터 양분 레이아웃) */
-.battle-field {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 12px 14px;
+/* ── 배틀 아레나 (포켓몬식 대치 레이아웃) ────────────────────────── */
+.battle-arena {
+  padding: 14px 14px 10px;
   overflow: visible;
-}
-.battle-entity {
-  flex: 1;
-  min-width: 0;
-  text-align: center;
-  position: relative;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 2px;
+  gap: 8px;
 }
-.battle-vs-col {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.battle-vs { font-weight: 800; color: var(--muted); font-size: 0.8rem; padding: 0 2px; }
 
-.battle-entity-emoji { font-size: 1.75rem; line-height: 1; }
-.battle-monster-emoji { font-size: 2.2rem; }
-.battle-entity-name {
-  font-size: 0.68rem;
+/* 몬스터 행: 오른쪽 정렬 */
+.arena-monster-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  gap: 0;
+}
+/* 플레이어 행: 왼쪽 정렬 */
+.arena-player-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 0;
+}
+.arena-spacer { flex: 1; }
+
+/* 액터 공통 */
+.battle-actor {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  min-width: 0;
+  max-width: 54%;
+}
+.actor-monster { align-items: flex-end; text-align: right; }
+
+.actor-info {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+}
+.actor-name {
+  font-size: 0.72rem;
   font-weight: 700;
-  color: var(--muted);
+  color: var(--text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 100%;
+  max-width: 120px;
 }
-.battle-entity-hp-value { font-size: 0.68rem; color: var(--muted); }
-.battle-field .progress-bar-track { margin-top: 3px; height: 6px; width: 100%; }
+.actor-hp-num {
+  font-size: 0.65rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.battle-actor .progress-bar-track { height: 6px; width: 130px; max-width: 100%; }
 
-/* float-text 앵커 (높이 0, overflow visible) */
-.float-text-anchor {
-  position: absolute;
-  top: 30%;
-  left: 50%;
-  width: 0;
-  height: 0;
+/* 캐릭터 이모지 + floating text 영역 */
+.actor-char-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
   pointer-events: none;
-  overflow: visible;
-  z-index: 20;
 }
+.actor-emoji {
+  font-size: 2.4rem;
+  line-height: 1;
+  display: block;
+  user-select: none;
+}
+.actor-emoji-monster { font-size: 3rem; }
 
-/* Floating 데미지 / 회복 숫자 */
+/* Floating 데미지 / 회복 숫자 — AnimatePresence로 제어 */
 .float-text {
   position: absolute;
-  top: 0;
-  left: 0;
+  top: -4px;
+  left: 50%;
   white-space: nowrap;
-  font-size: 1.05rem;
+  font-size: 1.1rem;
   font-weight: 900;
   letter-spacing: -0.01em;
   pointer-events: none;
-  transform-origin: center top;
-  animation: damage-float 750ms ease forwards;
+  z-index: 20;
 }
-.float-damage { color: #f87171; text-shadow: 0 1px 4px rgba(239,68,68,0.4); }
-.float-heal   { color: #4ade80; text-shadow: 0 1px 4px rgba(34,197,94,0.4); animation-name: heal-float; }
+.float-damage { color: #f87171; text-shadow: 0 1px 6px rgba(239,68,68,0.5); }
+.float-heal   { color: #4ade80; text-shadow: 0 1px 6px rgba(34,197,94,0.5); }
 
 /* 전투 로그 */
 .battle-log {
@@ -485,72 +508,10 @@ body {
   font-weight: 600;
 }
 
-/* ── 전투 애니메이션 keyframes ───────────────────────────────────── */
-@keyframes player-attack {
-  0%   { transform: translateX(0); }
-  35%  { transform: translateX(18px); }
-  65%  { transform: translateX(8px); }
-  100% { transform: translateX(0); }
-}
-@keyframes player-hit {
-  0%   { transform: translateX(0); }
-  15%  { transform: translateX(-10px); }
-  35%  { transform: translateX(8px); }
-  55%  { transform: translateX(-5px); }
-  75%  { transform: translateX(3px); }
-  100% { transform: translateX(0); }
-}
-@keyframes player-heal {
-  0%   { transform: scale(1); }
-  45%  { transform: scale(1.08); }
-  100% { transform: scale(1); }
-}
-@keyframes monster-attack {
-  0%   { transform: translateX(0); }
-  35%  { transform: translateX(-18px); }
-  65%  { transform: translateX(-8px); }
-  100% { transform: translateX(0); }
-}
-@keyframes monster-hit {
-  0%   { transform: translateX(0); }
-  20%  { transform: translateX(10px); }
-  45%  { transform: translateX(-8px); }
-  65%  { transform: translateX(5px); }
-  82%  { transform: translateX(-3px); }
-  100% { transform: translateX(0); }
-}
-@keyframes damage-float {
-  0%   { opacity: 1;   transform: translate(-50%, 0)     scale(1.25); }
-  20%  { opacity: 1;   transform: translate(-50%, -10px) scale(1.05); }
-  80%  { opacity: 0.6; transform: translate(-50%, -28px) scale(0.9); }
-  100% { opacity: 0;   transform: translate(-50%, -38px) scale(0.8); }
-}
-@keyframes heal-float {
-  0%   { opacity: 1;   transform: translate(-50%, 0)     scale(1.25); }
-  20%  { opacity: 1;   transform: translate(-50%, -10px) scale(1.05); }
-  80%  { opacity: 0.6; transform: translate(-50%, -28px) scale(0.9); }
-  100% { opacity: 0;   transform: translate(-50%, -38px) scale(0.8); }
-}
-
-/* 애니메이션 클래스 적용 */
-.player-entity.is-attacking { animation: player-attack 400ms ease; }
-.player-entity.is-hit       { animation: player-hit   480ms ease; }
-.player-entity.is-healed    { animation: player-heal  500ms ease; }
-.monster-entity.is-attacking { animation: monster-attack 400ms ease; }
-.monster-entity.is-hit       { animation: monster-hit   480ms ease; }
-
-
 /* ── 접근성: prefers-reduced-motion ─────────────────────────────── */
+/* Motion for React는 내부적으로 prefers-reduced-motion을 감지해 애니메이션을 최소화함  */
+/* progress-bar CSS transition은 여기서 별도로 제어                                     */
 @media (prefers-reduced-motion: reduce) {
-  .player-entity.is-attacking,
-  .player-entity.is-hit,
-  .player-entity.is-healed,
-  .monster-entity.is-attacking,
-  .monster-entity.is-hit,
-  .float-text {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-  }
   .progress-bar-fill {
     transition: none !important;
   }
@@ -629,6 +590,8 @@ body {
   border-color: var(--primary);
   transform: translateY(-2px);
 }
+.choice-btn:focus { outline: none; }
+.choice-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .choice-btn:disabled { cursor: not-allowed; }
 .choice-btn.correct { background: rgba(34,197,94,0.12); border-color: var(--text-success); color: var(--text-success); font-weight: 700; }
 .choice-btn.wrong { background: rgba(239,68,68,0.12); border-color: var(--text-danger); color: var(--text-danger); font-weight: 700; }
