@@ -432,6 +432,7 @@ export default function App() {
           onBattleEnd={handleBattleEnd}
           onUseItem={handleUseItem}
           onExit={() => setScreen(SCREEN.STAGE_SELECT)}
+          appTheme={theme}
         />
       )}
 

@@ -376,6 +376,48 @@ body {
   box-shadow: 0 0 20px rgba(239,68,68,0.15);
 }
 
+/* ── BattleCanvasPanel (Phaser 2D) ─────────────────────────────── */
+.battle-canvas-panel {
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: transparent;
+  width: 100%;
+  height: 260px;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.phaser-canvas-host {
+  width: 100%;
+  height: 260px;
+  display: block;
+}
+
+.phaser-canvas-host canvas {
+  display: block;
+  width: 100% !important;
+  height: 260px !important;
+  border-radius: var(--radius);
+  image-rendering: auto;
+}
+
+.battle-canvas-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 260px;
+  background: var(--surface);
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .battle-canvas-panel { display: none; }
+}
+
 /* ── BattleScreen ──────────────────────────────────────────────── */
 .battle-header {
   display: flex;

@@ -14,7 +14,7 @@ export const stages = [
     questionCount: 6,
     difficulty: "N5",
     recommendedLevel: 1,
-    monster: { name: "문장 너구리", emoji: "🦝", hp: 100, theme: "forest" },
+    monster: { name: "문장 너구리", emoji: "🦝", assetKey: "monster_raccoon_sentence", hp: 100, theme: "forest" },
     rewards: { exp: 40, gold: 20 },
   },
   {
@@ -31,7 +31,7 @@ export const stages = [
     questionCount: 6,
     difficulty: "N5",
     recommendedLevel: 1,
-    monster: { name: "조사 여우", emoji: "🦊", hp: 120, theme: "forest" },
+    monster: { name: "조사 여우", emoji: "🦊", assetKey: "monster_fox_grammar", hp: 120, theme: "forest" },
     rewards: { exp: 50, gold: 25 },
   },
   // ── N4: 활용 지역 ────────────────────────────────────────────────
@@ -49,7 +49,7 @@ export const stages = [
     questionCount: 6,
     difficulty: "N4",
     recommendedLevel: 1,
-    monster: { name: "활용 늑대", emoji: "🐺", hp: 130, theme: "cave" },
+    monster: { name: "활용 늑대", emoji: "🐺", assetKey: "monster_wolf_conjugation", hp: 130, theme: "cave" },
     rewards: { exp: 60, gold: 30 },
   },
   {
@@ -66,7 +66,7 @@ export const stages = [
     questionCount: 6,
     difficulty: "N4",
     recommendedLevel: 2,
-    monster: { name: "형용사 유령", emoji: "👻", hp: 140, theme: "mansion" },
+    monster: { name: "형용사 유령", emoji: "👻", assetKey: "monster_ghost_adjective", hp: 140, theme: "mansion" },
     rewards: { exp: 70, gold: 35 },
   },
   {
@@ -83,7 +83,7 @@ export const stages = [
     questionCount: 6,
     difficulty: "N4",
     recommendedLevel: 2,
-    monster: { name: "시공 골렘", emoji: "🗿", hp: 150, theme: "tower" },
+    monster: { name: "시공 골렘", emoji: "🗿", assetKey: "monster_golem_spacetime", hp: 150, theme: "tower" },
     rewards: { exp: 80, gold: 40 },
   },
   {
@@ -100,7 +100,7 @@ export const stages = [
     questionCount: 8,
     difficulty: "N4",
     recommendedLevel: 3,
-    monster: { name: "규칙 기사", emoji: "🛡️", hp: 180, theme: "castle" },
+    monster: { name: "규칙 기사", emoji: "🛡️", assetKey: "monster_knight_rules", hp: 180, theme: "castle" },
     rewards: { exp: 100, gold: 50 },
   },
   // ── N3: 표현 지역 ────────────────────────────────────────────────
@@ -118,7 +118,7 @@ export const stages = [
     questionCount: 8,
     difficulty: "N3",
     recommendedLevel: 4,
-    monster: { name: "기억 까마귀", emoji: "🐦‍⬛", hp: 180, theme: "road" },
+    monster: { name: "기억 까마귀", emoji: "🐦‍⬛", assetKey: "monster_crow_memory", hp: 180, theme: "road" },
     rewards: { exp: 110, gold: 55 },
   },
   {
@@ -135,7 +135,7 @@ export const stages = [
     questionCount: 8,
     difficulty: "N3",
     recommendedLevel: 5,
-    monster: { name: "접속 뱀", emoji: "🐍", hp: 200, theme: "valley" },
+    monster: { name: "접속 뱀", emoji: "🐍", assetKey: "monster_snake_connector", hp: 200, theme: "valley" },
     rewards: { exp: 120, gold: 60 },
   },
   {
@@ -152,7 +152,7 @@ export const stages = [
     questionCount: 10,
     difficulty: "N3",
     recommendedLevel: 6,
-    monster: { name: "독해 드래곤", emoji: "🐉", hp: 240, theme: "boss" },
+    monster: { name: "독해 드래곤", emoji: "🐉", assetKey: "monster_dragon_reading", hp: 240, theme: "boss" },
     rewards: { exp: 200, gold: 100 },
   },
   // ── N2: 독해 지역 ────────────────────────────────────────────────
@@ -170,7 +170,7 @@ export const stages = [
     questionCount: 6,
     difficulty: "N2",
     recommendedLevel: 7,
-    monster: { name: "문법 키메라", emoji: "🧬", hp: 260, theme: "tower" },
+    monster: { name: "문법 키메라", emoji: "🧬", assetKey: "monster_chimera_grammar", hp: 260, theme: "tower" },
     rewards: { exp: 160, gold: 80 },
   },
   {
@@ -187,7 +187,7 @@ export const stages = [
     questionCount: 6,
     difficulty: "N2",
     recommendedLevel: 8,
-    monster: { name: "논리 골렘", emoji: "⚙️", hp: 280, theme: "castle" },
+    monster: { name: "논리 골렘", emoji: "⚙️", assetKey: "monster_golem_logic", hp: 280, theme: "castle" },
     rewards: { exp: 180, gold: 90 },
   },
   // ── N1: 고급 지역 ────────────────────────────────────────────────
@@ -205,7 +205,7 @@ export const stages = [
     questionCount: 6,
     difficulty: "N1",
     recommendedLevel: 10,
-    monster: { name: "심연 용", emoji: "🐉", hp: 320, theme: "boss" },
+    monster: { name: "심연 용", emoji: "🐉", assetKey: "monster_dragon_abyss", hp: 320, theme: "boss" },
     rewards: { exp: 240, gold: 120 },
   },
   {
@@ -222,7 +222,7 @@ export const stages = [
     questionCount: 6,
     difficulty: "N1",
     recommendedLevel: 12,
-    monster: { name: "독해 마왕", emoji: "👑", hp: 360, theme: "boss" },
+    monster: { name: "독해 마왕", emoji: "👑", assetKey: "monster_boss_reading", hp: 360, theme: "boss" },
     rewards: { exp: 300, gold: 150 },
   },
 
@@ -242,7 +242,7 @@ export const stages = [
     passAccuracy: 70,
     difficulty: "N5",
     recommendedLevel: 1,
-    monster: { name: "동사 너구리", emoji: "🦝", hp: 130, theme: "forest" },
+    monster: { name: "동사 너구리", emoji: "🦝", assetKey: "monster_raccoon_verb", hp: 130, theme: "forest" },
     rewards: { exp: 55, gold: 28 },
   },
   {
@@ -260,7 +260,7 @@ export const stages = [
     passAccuracy: 70,
     difficulty: "N5",
     recommendedLevel: 1,
-    monster: { name: "시간 부엉이", emoji: "🦉", hp: 140, theme: "tower" },
+    monster: { name: "시간 부엉이", emoji: "🦉", assetKey: "monster_owl_time", hp: 140, theme: "tower" },
     rewards: { exp: 60, gold: 30 },
   },
 
@@ -280,7 +280,7 @@ export const stages = [
     passAccuracy: 70,
     difficulty: "N4",
     recommendedLevel: 3,
-    monster: { name: "비교 사자", emoji: "🦁", hp: 160, theme: "castle" },
+    monster: { name: "비교 사자", emoji: "🦁", assetKey: "monster_lion_compare", hp: 160, theme: "castle" },
     rewards: { exp: 90, gold: 45 },
   },
   {
@@ -298,7 +298,7 @@ export const stages = [
     passAccuracy: 70,
     difficulty: "N4",
     recommendedLevel: 3,
-    monster: { name: "의무 기사", emoji: "🛡️", hp: 170, theme: "mansion" },
+    monster: { name: "의무 기사", emoji: "🛡️", assetKey: "monster_knight_obligation", hp: 170, theme: "mansion" },
     rewards: { exp: 95, gold: 48 },
   },
 
@@ -318,7 +318,7 @@ export const stages = [
     passAccuracy: 72,
     difficulty: "N3",
     recommendedLevel: 6,
-    monster: { name: "조건 거미", emoji: "🕷️", hp: 200, theme: "cave" },
+    monster: { name: "조건 거미", emoji: "🕷️", assetKey: "monster_spider_conditional", hp: 200, theme: "cave" },
     rewards: { exp: 130, gold: 65 },
   },
   {
@@ -336,7 +336,7 @@ export const stages = [
     passAccuracy: 72,
     difficulty: "N3",
     recommendedLevel: 7,
-    monster: { name: "안개 여우", emoji: "🦊", hp: 210, theme: "valley" },
+    monster: { name: "안개 여우", emoji: "🦊", assetKey: "monster_fox_haze", hp: 210, theme: "valley" },
     rewards: { exp: 140, gold: 70 },
   },
 
@@ -356,7 +356,7 @@ export const stages = [
     passAccuracy: 75,
     difficulty: "N2",
     recommendedLevel: 9,
-    monster: { name: "관점 키메라", emoji: "🧬", hp: 240, theme: "tower" },
+    monster: { name: "관점 키메라", emoji: "🧬", assetKey: "monster_chimera_perspective", hp: 240, theme: "tower" },
     rewards: { exp: 190, gold: 95 },
   },
   {
@@ -374,7 +374,7 @@ export const stages = [
     passAccuracy: 75,
     difficulty: "N2",
     recommendedLevel: 9,
-    monster: { name: "인과 골렘", emoji: "🗿", hp: 260, theme: "road" },
+    monster: { name: "인과 골렘", emoji: "🗿", assetKey: "monster_golem_causality", hp: 260, theme: "road" },
     rewards: { exp: 200, gold: 100 },
   },
 
@@ -394,7 +394,7 @@ export const stages = [
     passAccuracy: 78,
     difficulty: "N1",
     recommendedLevel: 13,
-    monster: { name: "심연의 용", emoji: "🐉", hp: 300, theme: "boss" },
+    monster: { name: "심연의 용", emoji: "🐉", assetKey: "monster_dragon_deepabyss", hp: 300, theme: "boss" },
     rewards: { exp: 320, gold: 160 },
   },
   {
@@ -412,7 +412,7 @@ export const stages = [
     passAccuracy: 78,
     difficulty: "N1",
     recommendedLevel: 14,
-    monster: { name: "문맥 마왕", emoji: "👑", hp: 340, theme: "boss" },
+    monster: { name: "문맥 마왕", emoji: "👑", assetKey: "monster_boss_context", hp: 340, theme: "boss" },
     rewards: { exp: 400, gold: 200 },
   },
 ];

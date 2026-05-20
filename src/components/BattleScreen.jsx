@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import ProgressBar from "./ProgressBar";
 import VocabNotesPanel from "./VocabNotesPanel";
 import AnnotatedText from "./AnnotatedText";
-import BattleArena from "./BattleArena";
+import BattleCanvasPanel from "./BattleCanvasPanel";
 import { vocabulary } from "../data/vocabulary";
 import { getVocabularyByIds } from "../utils/question";
 
@@ -23,15 +23,25 @@ function createEventId() {
   return `ev_${Date.now()}_${Math.random().toString(36).slice(2)}`;
 }
 
-export default function BattleScreen({ battleState, setBattleState, player, stages, onBattleEnd, onUseItem, onExit }) {
+const RESOLVE_DELAY_MS = 700;
+
+function getReducedMotion() {
+  try { return window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (_) { return false; }
+}
+
+export default function BattleScreen({ battleState, setBattleState, player, stages, onBattleEnd, onUseItem, onExit, appTheme }) {
   const stage = stages.find((s) => s.id === battleState.stageId);
   if (!stage) return <div className="screen"><p>스테이지 정보를 불러올 수 없습니다.</p></div>;
 
   // ── 애니메이션 state ────────────────────────────────────────────
   const [battleEvent, setBattleEvent] = useState(null);
   const [battleLog, setBattleLog] = useState([]);
-  const [playerAnimState, setPlayerAnimState] = useState("idle");
-  const [monsterAnimState, setMonsterAnimState] = useState("idle");
+  const [isResolving, setIsResolving] = useState(false);
+
+  const battleStateRef = useRef(battleState);
+  const onBattleEndRef = useRef(onBattleEnd);
+  useEffect(() => { battleStateRef.current = battleState; }, [battleState]);
+  useEffect(() => { onBattleEndRef.current = onBattleEnd; }, [onBattleEnd]);
 
   function addToLog(entry) {
     setBattleLog((prev) => [...prev, entry].slice(-3));
@@ -47,7 +57,6 @@ export default function BattleScreen({ battleState, setBattleState, player, stag
     const delta = battleState.playerHp - prevPlayerHpRef.current;
     if (delta > 0) {
       setBattleEvent({ id: createEventId(), type: "heal", target: "player", amount: delta });
-      setPlayerAnimState("heal");
     }
     prevPlayerHpRef.current = battleState.playerHp;
   }, [battleState.playerHp]);
@@ -64,6 +73,30 @@ export default function BattleScreen({ battleState, setBattleState, player, stag
     }
   }, [battleState.feedbackMessage, battleState.hasAnswered]);
 
+  // 힌트 사용 감지 → Phaser hint 이펙트
+  const prevHiddenCountRef = useRef(0);
+  useEffect(() => {
+    const count = battleState.hiddenChoiceIds?.length ?? 0;
+    if (count > prevHiddenCountRef.current) {
+      setBattleEvent({ id: createEventId(), type: "hint" });
+    }
+    prevHiddenCountRef.current = count;
+  }, [battleState.hiddenChoiceIds]);
+
+  // 전투 종료 감지 → Phaser clear/fail 이펙트 (HP bar 트윈 완료 대기 400ms)
+  const finishSessionRef = useRef(null);
+  useEffect(() => {
+    if (!battleState.isFinished) return;
+    const sessionId = battleState.battleSessionId ?? "";
+    if (finishSessionRef.current === sessionId) return;
+    finishSessionRef.current = sessionId;
+    const isWin = battleState.monsterHp <= 0;
+    const timer = setTimeout(() => {
+      setBattleEvent({ id: createEventId(), type: isWin ? "clear" : "fail" });
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [battleState.isFinished, battleState.battleSessionId, battleState.monsterHp]);
+
   // ── 구조분해 ────────────────────────────────────────────────────
   const {
     mode, questions, currentQuestionIndex, playerHp, playerMaxHp,
@@ -79,7 +112,7 @@ export default function BattleScreen({ battleState, setBattleState, player, stag
   const totalQuestions = questions.length;
   const inventory = player?.inventory ?? { hints: 0, potions: 0 };
   const monsterDisplay = isTrial
-    ? { name: "문지기 스핑크스", emoji: "🦉", hp: monsterMaxHp, theme: "tower" }
+    ? { name: "문지기 스핑크스", emoji: "🦁", hp: monsterMaxHp, theme: "tower" }
     : stage.monster;
   const themeClass = `theme-${monsterDisplay.theme ?? "forest"}`;
   const vocabItems = getVocabularyByIds(currentQuestion.vocabIds, vocabulary);
@@ -114,13 +147,9 @@ export default function BattleScreen({ battleState, setBattleState, player, stag
 
     const eventId = createEventId();
     if (isCorrect) {
-      setPlayerAnimState("attack");
-      setMonsterAnimState("hit");
       setBattleEvent({ id: eventId, type: "damage", source: "player", target: "monster", amount: rules.damageToMonster });
       addToLog(`✅ 정답! ${monsterDisplay.name}에게 ${rules.damageToMonster} 데미지!`);
     } else {
-      setMonsterAnimState("attack");
-      setPlayerAnimState("hit");
       setBattleEvent({ id: eventId, type: "damage", source: "monster", target: "player", amount: rules.damageToPlayer });
       addToLog(`❌ 오답! 플레이어가 ${rules.damageToPlayer} 데미지를 받았습니다.`);
     }
@@ -142,9 +171,14 @@ export default function BattleScreen({ battleState, setBattleState, player, stag
   }
 
   function handleNext() {
-    if (!hasAnswered) return;
+    if (!hasAnswered || isResolving) return;
     if (isFinished) {
-      onBattleEnd(battleState);
+      const delay = getReducedMotion() ? 80 : RESOLVE_DELAY_MS;
+      setIsResolving(true);
+      setTimeout(() => {
+        setIsResolving(false);
+        onBattleEndRef.current(battleStateRef.current);
+      }, delay);
       return;
     }
     prevFeedbackRef.current = "";
@@ -194,20 +228,13 @@ export default function BattleScreen({ battleState, setBattleState, player, stag
         </div>
       )}
 
-      {/* 배틀 아레나 */}
-      <BattleArena
-        playerHp={playerHp}
-        playerMaxHp={playerMaxHp}
-        monsterHp={monsterHp}
-        monsterMaxHp={monsterMaxHp}
-        monsterDisplay={monsterDisplay}
-        isTrial={isTrial}
-        playerAnimState={playerAnimState}
-        monsterAnimState={monsterAnimState}
+      {/* Phaser 2D 배틀 캔버스 */}
+      <BattleCanvasPanel
+        battleState={battleState}
+        currentStage={stage}
+        player={player}
+        theme={appTheme}
         battleEvent={battleEvent}
-        onPlayerAnimComplete={() => setPlayerAnimState("idle")}
-        onMonsterAnimComplete={() => setMonsterAnimState("idle")}
-        themeClass={themeClass}
       />
 
       {/* 클리어 목표 */}
@@ -294,9 +321,9 @@ export default function BattleScreen({ battleState, setBattleState, player, stag
       <button
         className="btn btn-primary btn-large btn-full"
         onClick={handleNext}
-        disabled={!hasAnswered}
+        disabled={!hasAnswered || isResolving}
       >
-        {isFinished ? "결과 보기 →" : "다음 문제 →"}
+        {isResolving ? "로딩 중..." : isFinished ? "결과 보기 →" : "다음 문제 →"}
       </button>
     </div>
   );
