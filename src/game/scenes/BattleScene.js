@@ -23,6 +23,7 @@ export class BattleScene extends Phaser.Scene {
     this._lastEventId   = null;
     this._sceneReady    = false;
     this._boundHandlers = {};
+    this._bossPhase2    = false;
 
     // Layers
     this._bgLayer     = null;
@@ -127,6 +128,7 @@ export class BattleScene extends Phaser.Scene {
     const prevSession = this._snapshot?.battleSessionId;
     if (prevSession && prevSession !== snapshot.battleSessionId) {
       this._lastEventId = null;
+      this._bossPhase2  = false;
       this._clearActors();
     }
     this._snapshot = snapshot;
@@ -142,6 +144,15 @@ export class BattleScene extends Phaser.Scene {
       }
       if (this._monsterActor.emojiText?.active && this._monsterActor.emojiText.type === "Text") {
         this._monsterActor.emojiText.setText(snapshot.monster.emoji || "👾");
+      }
+
+      // Boss phase 2 trigger at ≤50% HP
+      if (this._currentTheme === "boss" && !this._bossPhase2 && snapshot.monster.hp > 0) {
+        const hpRatio = snapshot.monster.hp / snapshot.monster.maxHp;
+        if (hpRatio <= 0.5) {
+          this._bossPhase2 = true;
+          this._triggerBossPhase2();
+        }
       }
     }
   }
@@ -379,6 +390,10 @@ export class BattleScene extends Phaser.Scene {
 
     playActorEnter(this._playerActor,  "left",  this);
     playActorEnter(this._monsterActor, "right", this);
+
+    if (this._currentTheme === "boss") {
+      this.time.delayedCall(dur(400), () => this._playBossSpawn());
+    }
   }
 
   _clearActors() {
@@ -386,6 +401,7 @@ export class BattleScene extends Phaser.Scene {
     if (this._monsterActor?.container?.active) this._monsterActor.container.destroy();
     this._playerActor  = null;
     this._monsterActor = null;
+    this._bossPhase2   = false;
     if (this._effectLayer) this._effectLayer.removeAll(true);
     if (this._floatLayer)  this._floatLayer.removeAll(true);
   }
@@ -468,5 +484,137 @@ export class BattleScene extends Phaser.Scene {
     const cy = this.scale.height / 2;
     playHintSparkle(this, cx, cy, this._effectLayer);
     playHintText(this, cx, cy + 10, this._floatLayer);
+  }
+
+  // ── Boss special effects ───────────────────────────────────────────────────
+  _playBossSpawn() {
+    if (!this._sceneReady || shouldReduceMotion()) return;
+    const w = this.scale.width;
+    const h = this.scale.height;
+
+    const overlay = this.add.rectangle(w / 2, h / 2, w, h, 0xef4444, 0).setDepth(90);
+    this.tweens.add({
+      targets: overlay,
+      alpha: { from: 0, to: 0.22 },
+      duration: dur(180),
+      yoyo: true,
+      repeat: 1,
+      onComplete: () => overlay.destroy(),
+    });
+
+    const txt = this.add.text(w / 2, h * 0.32, "⚔️ 보스 등장!", {
+      fontSize: "22px",
+      fontFamily: "sans-serif",
+      color: "#fca5a5",
+      stroke: "#7f1d1d",
+      strokeThickness: 4,
+      align: "center",
+    }).setOrigin(0.5).setAlpha(0).setDepth(91);
+    if (this._floatLayer) this._floatLayer.add(txt);
+
+    this.tweens.add({
+      targets: txt,
+      alpha: 1,
+      scaleX: { from: 0.6, to: 1 },
+      scaleY: { from: 0.6, to: 1 },
+      duration: dur(220),
+      ease: "Back.Out",
+      onComplete: () => {
+        this.time.delayedCall(dur(900), () => {
+          this.tweens.add({ targets: txt, alpha: 0, duration: dur(300), onComplete: () => txt.destroy() });
+        });
+      },
+    });
+
+    // Shake monster on spawn
+    if (this._monsterActor?.container?.active) {
+      const origX = this._monsterActor.container.x;
+      this.tweens.add({
+        targets: this._monsterActor.container,
+        x: { from: origX - 8, to: origX + 8 },
+        duration: dur(60),
+        yoyo: true,
+        repeat: 3,
+        onComplete: () => { if (this._monsterActor?.container?.active) this._monsterActor.container.x = origX; },
+      });
+    }
+  }
+
+  _triggerBossPhase2() {
+    if (!this._sceneReady || shouldReduceMotion()) return;
+    const w = this.scale.width;
+    const h = this.scale.height;
+
+    // Red screen flash ×2
+    const overlay = this.add.rectangle(w / 2, h / 2, w, h, 0xef4444, 0).setDepth(90);
+    this.tweens.add({
+      targets: overlay,
+      alpha: { from: 0, to: 0.35 },
+      duration: dur(120),
+      yoyo: true,
+      repeat: 2,
+      onComplete: () => overlay.destroy(),
+    });
+
+    // Enrage warning text
+    const txt = this.add.text(w / 2, h * 0.28, "😡 분노 발동!\n공격력 UP!", {
+      fontSize: "18px",
+      fontFamily: "sans-serif",
+      color: "#fbbf24",
+      stroke: "#7c2d12",
+      strokeThickness: 4,
+      align: "center",
+    }).setOrigin(0.5).setAlpha(0).setDepth(91);
+    if (this._floatLayer) this._floatLayer.add(txt);
+
+    this.tweens.add({
+      targets: txt,
+      alpha: 1,
+      scaleX: { from: 1.4, to: 1 },
+      scaleY: { from: 1.4, to: 1 },
+      duration: dur(200),
+      ease: "Back.Out",
+      onComplete: () => {
+        this.time.delayedCall(dur(1200), () => {
+          this.tweens.add({ targets: txt, alpha: 0, duration: dur(300), onComplete: () => txt.destroy() });
+        });
+      },
+    });
+
+    // Monster pulse effect
+    if (this._monsterActor?.container?.active) {
+      const origX = this._monsterActor.container.x;
+      this.tweens.chain({
+        targets: this._monsterActor.container,
+        tweens: [
+          { x: origX - 12, duration: dur(50) },
+          { x: origX + 12, duration: dur(50) },
+          { x: origX - 12, duration: dur(50) },
+          { x: origX + 12, duration: dur(50) },
+          { x: origX,      duration: dur(50) },
+        ],
+      });
+      this.tweens.add({
+        targets: this._monsterActor.container,
+        scaleX: { from: 1, to: 1.15 },
+        scaleY: { from: 1, to: 1.15 },
+        duration: dur(300),
+        yoyo: true,
+        ease: "Sine.InOut",
+      });
+    }
+
+    // Redraw background with phase2 intensity
+    this._redrawBackground("boss");
+    const extra = this._bgGfx;
+    if (extra?.active) {
+      this.tweens.add({
+        targets: extra,
+        alpha: { from: 1, to: 0.7 },
+        duration: dur(200),
+        yoyo: true,
+        repeat: 2,
+      });
+    }
   }
 }

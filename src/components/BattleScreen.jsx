@@ -29,8 +29,19 @@ function getReducedMotion() {
   try { return window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (_) { return false; }
 }
 
+const REVIEW_STAGE = {
+  id: "__review__",
+  title: "오답 복습",
+  monster: { name: "복습의 정령", emoji: "📚", hp: 0, theme: "default" },
+  passAccuracy: 70,
+  rewards: { exp: 0, gold: 0 },
+};
+
 export default function BattleScreen({ battleState, setBattleState, player, stages, onBattleEnd, onUseItem, onExit, appTheme }) {
-  const stage = stages.find((s) => s.id === battleState.stageId);
+  const isReview = battleState.mode === "review";
+  const stage = isReview
+    ? REVIEW_STAGE
+    : stages.find((s) => s.id === battleState.stageId);
   if (!stage) return <div className="screen"><p>스테이지 정보를 불러올 수 없습니다.</p></div>;
 
   // ── 애니메이션 state ────────────────────────────────────────────
@@ -111,9 +122,11 @@ export default function BattleScreen({ battleState, setBattleState, player, stag
   const isLastQuestion = currentQuestionIndex >= questions.length - 1;
   const totalQuestions = questions.length;
   const inventory = player?.inventory ?? { hints: 0, potions: 0 };
-  const monsterDisplay = isTrial
-    ? { name: "문지기 스핑크스", emoji: "🦁", hp: monsterMaxHp, theme: "tower" }
-    : stage.monster;
+  const monsterDisplay = isReview
+    ? { name: "복습의 정령", emoji: "📚", hp: monsterMaxHp, theme: "default" }
+    : isTrial
+      ? { name: "문지기 스핑크스", emoji: "🦁", hp: monsterMaxHp, theme: "tower" }
+      : stage.monster;
   const themeClass = `theme-${monsterDisplay.theme ?? "forest"}`;
   const vocabItems = getVocabularyByIds(currentQuestion.vocabIds, vocabulary);
 
@@ -135,23 +148,28 @@ export default function BattleScreen({ battleState, setBattleState, player, stag
     const playerDead = newPlayerHp <= 0;
     const newIsFinished = monsterDefeated || playerDead || isLastQuestion;
 
+    const correctText = currentQuestion.choices.find((c) => c.id === currentQuestion.correctChoiceId)?.text ?? "";
     let msg = "";
     if (isCorrect) {
-      msg = monsterDefeated ? "✅ 정답! 몬스터를 처치했습니다!" : "✅ 정답입니다!";
+      msg = monsterDefeated ? "✅ 정답! 정령을 물리쳤습니다!" : "✅ 정답입니다!";
+      if (!isReview) msg = monsterDefeated ? "✅ 정답! 몬스터를 처치했습니다!" : "✅ 정답입니다!";
     } else {
-      const correctText = currentQuestion.choices.find((c) => c.id === currentQuestion.correctChoiceId)?.text ?? "";
-      msg = playerDead
-        ? `❌ 오답! HP가 0이 됐습니다. 정답: ${correctText}`
-        : `❌ 오답! 정답: ${correctText}`;
+      msg = isReview
+        ? `❌ 오답! 정답: ${correctText}`
+        : playerDead
+          ? `❌ 오답! HP가 0이 됐습니다. 정답: ${correctText}`
+          : `❌ 오답! 정답: ${correctText}`;
     }
 
     const eventId = createEventId();
     if (isCorrect) {
       setBattleEvent({ id: eventId, type: "damage", source: "player", target: "monster", amount: rules.damageToMonster });
       addToLog(`✅ 정답! ${monsterDisplay.name}에게 ${rules.damageToMonster} 데미지!`);
-    } else {
+    } else if (rules.damageToPlayer > 0) {
       setBattleEvent({ id: eventId, type: "damage", source: "monster", target: "player", amount: rules.damageToPlayer });
       addToLog(`❌ 오답! 플레이어가 ${rules.damageToPlayer} 데미지를 받았습니다.`);
+    } else {
+      addToLog(`❌ 오답! 정답을 확인해보세요.`);
     }
 
     setBattleState((prev) => ({
@@ -217,14 +235,19 @@ export default function BattleScreen({ battleState, setBattleState, player, stag
       {/* 헤더 */}
       <header className="battle-header">
         <button className="btn btn-ghost btn-small" onClick={handleExit}>✕</button>
-        <span className="battle-stage-title">{isTrial ? "🧪 도약 시험" : stage.title}</span>
+        <span className="battle-stage-title">{isReview ? "📚 오답 복습" : isTrial ? "🧪 도약 시험" : stage.title}</span>
         <span className="battle-progress">{currentQuestionIndex + 1}/{totalQuestions}</span>
       </header>
 
-      {/* 도약 시험 배너 */}
+      {/* 모드 배너 */}
       {isTrial && (
         <div className="trial-banner">
           🧪 도약 시험 · 통과 조건: 정답률 {rules.passAccuracy}% 이상 · 아이템 사용 불가
+        </div>
+      )}
+      {isReview && (
+        <div className="review-banner">
+          📚 오답 복습 모드 · HP 데미지 없음 · 정답 맞히면 오답 목록에서 제거됩니다
         </div>
       )}
 
@@ -239,13 +262,23 @@ export default function BattleScreen({ battleState, setBattleState, player, stag
 
       {/* 클리어 목표 */}
       <div className="battle-goal-card">
-        <div className="battle-goal-row">
-          <span className="battle-goal-label">🎯 정답</span>
-          <span className={`battle-goal-value ${correctAchievedClass}`}>{correctCount} / {rules.requiredCorrect}</span>
-          <span className="battle-goal-sep">·</span>
-          <span className="battle-goal-label">⚠️ 오답</span>
-          <span className={`battle-goal-value ${wrongDangerClass}`}>{wrongCount} / {rules.mistakesToFail}</span>
-        </div>
+        {isReview ? (
+          <div className="battle-goal-row">
+            <span className="battle-goal-label">📚 복습</span>
+            <span className={`battle-goal-value ${correctAchievedClass}`}>{correctCount} / {totalQuestions}문제</span>
+            <span className="battle-goal-sep">·</span>
+            <span className="battle-goal-label">✅ 정답</span>
+            <span className="battle-goal-value goal-achieved">{correctCount}개 마스터 예정</span>
+          </div>
+        ) : (
+          <div className="battle-goal-row">
+            <span className="battle-goal-label">🎯 정답</span>
+            <span className={`battle-goal-value ${correctAchievedClass}`}>{correctCount} / {rules.requiredCorrect}</span>
+            <span className="battle-goal-sep">·</span>
+            <span className="battle-goal-label">⚠️ 오답</span>
+            <span className={`battle-goal-value ${wrongDangerClass}`}>{wrongCount} / {rules.mistakesToFail}</span>
+          </div>
+        )}
       </div>
 
       {/* 전투 로그 */}
@@ -260,7 +293,7 @@ export default function BattleScreen({ battleState, setBattleState, player, stag
       )}
 
       {/* 아이템 */}
-      {!isTrial && (
+      {!isTrial && !isReview && (
         <div className="item-bar">
           <button
             className="item-btn"

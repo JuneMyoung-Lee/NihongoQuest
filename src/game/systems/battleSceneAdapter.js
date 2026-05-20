@@ -1,14 +1,23 @@
 export function createBattleSnapshot({ battleState, currentStage, player }) {
-  const isTrial = battleState?.mode === "trial";
-  const monsterDisplay = isTrial
+  const isTrial  = battleState?.mode === "trial";
+  const isReview = battleState?.mode === "review";
+  const monsterDisplay = isReview
     ? {
-        name: "문지기 스핑크스",
-        emoji: "🦁",
-        assetKey: "monster_sphinx_trial",
+        name: "복습의 정령",
+        emoji: "📚",
+        assetKey: null,
         hp: battleState?.monsterMaxHp ?? 100,
-        theme: "tower",
+        theme: "default",
       }
-    : currentStage?.monster;
+    : isTrial
+      ? {
+          name: "문지기 스핑크스",
+          emoji: "🦁",
+          assetKey: "monster_sphinx_trial",
+          hp: battleState?.monsterMaxHp ?? 100,
+          theme: "tower",
+        }
+      : currentStage?.monster;
 
   return {
     battleSessionId: battleState?.battleSessionId || "unknown",

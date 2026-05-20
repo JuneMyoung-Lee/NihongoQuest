@@ -10,6 +10,7 @@ const defaultStats = {
   todayClearedStages: 0,
   streakDays: 0,
   lastPlayedDate: null,
+  dailyGoalClaimed: false,
 };
 
 const defaultPlayer = {

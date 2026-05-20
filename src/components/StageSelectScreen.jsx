@@ -6,6 +6,13 @@ import {
   JLPT_LEVELS, JLPT_INFO,
 } from "../utils/gameLogic";
 
+function getAccClass(accuracy, passAcc) {
+  if (accuracy === 100) return "acc-perfect";
+  if (accuracy >= passAcc) return "acc-good";
+  if (accuracy >= Math.floor(passAcc * 0.75)) return "acc-warn";
+  return "acc-danger";
+}
+
 // label 기준 중복 제거 (대소문자·공백 정규화)
 function dedupeBadgesByLabel(badges) {
   const seen = new Set();
@@ -154,11 +161,11 @@ export default function StageSelectScreen({ player, stages, onStartStage, onStar
               </div>
 
               {stageProgress && (
-                <div className="stage-record">
-                  <span>🎯 최고 {stageProgress.bestAccuracy}%</span>
-                  <span>🔁 {stageProgress.attempts}회 도전</span>
-                  {stageProgress.perfectCleared && <span className="perfect-badge">PERFECT</span>}
-                </div>
+                <StageProgressSection
+                  progress={stageProgress}
+                  questionCount={stage.questionCount}
+                  passAcc={stage.passAccuracy ?? 70}
+                />
               )}
 
               <div className="stage-btn-group">
@@ -191,6 +198,34 @@ export default function StageSelectScreen({ player, stages, onStartStage, onStar
             </div>
           );
         })}
+      </div>
+    </div>
+  );
+}
+
+function StageProgressSection({ progress, questionCount, passAcc }) {
+  const accClass = getAccClass(progress.bestAccuracy, passAcc);
+
+  return (
+    <div className="stage-progress-section">
+      <div className="stage-acc-row">
+        <span className="stage-acc-label">최고 정답률</span>
+        <div className="stage-acc-track">
+          <div
+            className={`stage-acc-fill ${accClass}`}
+            style={{ width: `${progress.bestAccuracy}%` }}
+          />
+        </div>
+        <span className={`stage-acc-pct ${accClass}`}>{progress.bestAccuracy}%</span>
+        {progress.perfectCleared && <span className="perfect-badge">✨ PERFECT</span>}
+      </div>
+      <div className="stage-stats-row">
+        <span className="stage-stat-chip">🔁 {progress.attempts}회 도전</span>
+        {progress.bestCorrectCount > 0 && questionCount > 0 && (
+          <span className="stage-stat-chip">
+            🎯 최고 {progress.bestCorrectCount}/{questionCount}문제
+          </span>
+        )}
       </div>
     </div>
   );

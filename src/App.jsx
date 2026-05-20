@@ -49,6 +49,10 @@ export default function App() {
   }, [theme]);
 
   useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }, [screen]);
+
+  useEffect(() => {
     validateQuestions(questions);
     validateStages(stages, questions);
     validateVocabulary(questions, vocabulary);
@@ -150,9 +154,68 @@ export default function App() {
     setScreen(SCREEN.BATTLE);
   }
 
+  function startReview() {
+    const wrongIds = player.wrongQuestionIds ?? [];
+    const reviewQs = wrongIds
+      .map((id) => questions.find((q) => q.id === id))
+      .filter(Boolean);
+
+    if (reviewQs.length === 0) {
+      setErrorMessage("복습할 오답이 없습니다. 먼저 스테이지에 도전해보세요!");
+      return;
+    }
+
+    const REVIEW_MAX = 10;
+    const shuffled = [...reviewQs].sort(() => Math.random() - 0.5).slice(0, REVIEW_MAX);
+    const totalQ = shuffled.length;
+    const requiredCorrect = Math.max(1, Math.ceil(totalQ * 0.7));
+    const monsterHp = requiredCorrect * 30;
+
+    const rules = {
+      totalQuestions: totalQ,
+      passAccuracy: 70,
+      requiredCorrect,
+      allowedWrong: totalQ,
+      mistakesToFail: totalQ + 1,
+      playerMaxHp: player.maxHp ?? 100,
+      monsterMaxHp: monsterHp,
+      damageToPlayer: 0,
+      damageToMonster: Math.max(1, Math.ceil(monsterHp / requiredCorrect)),
+    };
+
+    setErrorMessage("");
+    setBattleState({
+      battleSessionId: createBattleSessionId(),
+      mode: "review",
+      stageId: null,
+      questions: shuffled,
+      battleRules: rules,
+      currentQuestionIndex: 0,
+      playerHp: rules.playerMaxHp,
+      playerMaxHp: rules.playerMaxHp,
+      monsterHp: rules.monsterMaxHp,
+      monsterMaxHp: rules.monsterMaxHp,
+      correctCount: 0,
+      wrongCount: 0,
+      answeredQuestionIds: [],
+      wrongQuestionIds: [],
+      hasAnswered: false,
+      selectedChoiceId: null,
+      isCurrentAnswerCorrect: null,
+      feedbackMessage: "",
+      hiddenChoiceIds: [],
+      isFinished: false,
+    });
+    setResultState(null);
+    setScreen(SCREEN.BATTLE);
+  }
+
   function handleUseItem(itemType) {
     if (!player || !battleState) return;
-    if (battleState.mode === "trial") { setErrorMessage("도약 시험에서는 아이템을 사용할 수 없습니다."); return; }
+    if (battleState.mode === "trial" || battleState.mode === "review") {
+      setErrorMessage("이 모드에서는 아이템을 사용할 수 없습니다.");
+      return;
+    }
 
     if (itemType === "hints") {
       if (battleState.hasAnswered) return;
@@ -212,6 +275,39 @@ export default function App() {
   }
 
   function handleBattleEnd(finalBattleState) {
+    // 오답 복습 모드
+    if (finalBattleState.mode === "review") {
+      const answeredCount = finalBattleState.answeredQuestionIds?.length ?? 0;
+      const correctCount  = finalBattleState.correctCount;
+      const wrongCount    = finalBattleState.wrongCount ?? 0;
+      const accuracy      = answeredCount > 0 ? Math.round((correctCount / answeredCount) * 100) : 0;
+      const sessionWrongSet = new Set(finalBattleState.wrongQuestionIds ?? []);
+      const masteredIds = (finalBattleState.answeredQuestionIds ?? []).filter(
+        (id) => !sessionWrongSet.has(id),
+      );
+      const remainingWrongCount = Math.max(
+        0,
+        (player.wrongQuestionIds?.length ?? 0) - masteredIds.length,
+      );
+      setResultState({
+        mode: "review",
+        stageId: null,
+        totalQuestions: finalBattleState.questions?.length ?? 0,
+        answeredCount,
+        correctCount,
+        wrongCount,
+        accuracy,
+        masteredIds,
+        remainingWrongCount,
+        wrongQuestionIds: finalBattleState.wrongQuestionIds ?? [],
+        saved: false,
+        earnedExp: 0,
+        earnedGold: 0,
+      });
+      setScreen(SCREEN.RESULT);
+      return;
+    }
+
     const stage = stages.find((s) => s.id === finalBattleState.stageId);
     if (!stage) return;
 
@@ -298,6 +394,24 @@ export default function App() {
   function handleResultSaved(result) {
     let updated = { ...player };
 
+    if (result.mode === "review") {
+      const masteredSet = new Set(result.masteredIds ?? []);
+      updated.wrongQuestionIds = (player.wrongQuestionIds ?? []).filter(
+        (id) => !masteredSet.has(id),
+      );
+      updated.stats = {
+        ...updated.stats,
+        totalAnswered: updated.stats.totalAnswered + (result.answeredCount ?? 0),
+        totalCorrect:  updated.stats.totalCorrect  + result.correctCount,
+        todayAnswered: updated.stats.todayAnswered  + (result.answeredCount ?? 0),
+      };
+      const ok = saveGame(updated);
+      if (!ok) setErrorMessage("저장에 실패했습니다.");
+      setPlayer(updated);
+      setResultState((prev) => ({ ...prev, saved: true }));
+      return;
+    }
+
     if (result.mode === "trial") {
       // 도약 시험: stats만 업데이트, clearedStageIds에는 넣지 않음
       const trialAnswered = result.answeredCount ?? result.totalQuestions;
@@ -318,6 +432,8 @@ export default function App() {
     }
 
     // 일반 스테이지
+    const DAILY_GOAL = 20;
+    const prevTodayAnswered = updated.stats.todayAnswered;
     const stageAnswered = result.answeredCount ?? result.totalQuestions;
     updated.stats = {
       ...updated.stats,
@@ -325,6 +441,16 @@ export default function App() {
       totalCorrect: updated.stats.totalCorrect + result.correctCount,
       todayAnswered: updated.stats.todayAnswered + stageAnswered,
     };
+
+    // 일일 목표 달성 보상 (+5G)
+    const newTodayAnswered = updated.stats.todayAnswered;
+    let dailyGoalAchieved = false;
+    if (!updated.stats.dailyGoalClaimed && prevTodayAnswered < DAILY_GOAL && newTodayAnswered >= DAILY_GOAL) {
+      updated.gold += 5;
+      updated.stats.dailyGoalClaimed = true;
+      updated.economy = { ...updated.economy, totalGoldEarned: (updated.economy?.totalGoldEarned ?? 0) + 5 };
+      dailyGoalAchieved = true;
+    }
 
     if (result.isCleared) {
       updated.stats.todayClearedStages += 1;
@@ -363,6 +489,7 @@ export default function App() {
 
     setResultState((prev) => ({
       ...prev,
+      dailyGoalAchieved,
       saved: true,
       leveledUp,
       previousLevel,
@@ -404,6 +531,7 @@ export default function App() {
           stages={stages}
           onStartQuest={startStage}
           onGoStageSelect={() => setScreen(SCREEN.STAGE_SELECT)}
+          onStartReview={startReview}
           onReset={handleReset}
           onPurchase={handlePurchase}
           setErrorMessage={setErrorMessage}
@@ -431,7 +559,7 @@ export default function App() {
           stages={stages}
           onBattleEnd={handleBattleEnd}
           onUseItem={handleUseItem}
-          onExit={() => setScreen(SCREEN.STAGE_SELECT)}
+          onExit={() => battleState.mode === "review" ? setScreen(SCREEN.HOME) : setScreen(SCREEN.STAGE_SELECT)}
           appTheme={theme}
         />
       )}
@@ -445,6 +573,7 @@ export default function App() {
           onResultSaved={handleResultSaved}
           onStartStage={startStage}
           onStartTrial={startTrial}
+          onStartReview={startReview}
           onGoStageSelect={() => setScreen(SCREEN.STAGE_SELECT)}
           onGoHome={() => setScreen(SCREEN.HOME)}
         />

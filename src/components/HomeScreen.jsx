@@ -9,7 +9,7 @@ const SHOP_ITEMS = [
   { key: "trialTickets", label: "도약의 증표", emoji: "🔑", price: 40, desc: "잠긴 스테이지 도약 시험에 사용" },
 ];
 
-export default function HomeScreen({ player, stages, onStartQuest, onGoStageSelect, onReset, onPurchase, setErrorMessage, theme, onThemeToggle }) {
+export default function HomeScreen({ player, stages, onStartQuest, onGoStageSelect, onStartReview, onReset, onPurchase, setErrorMessage, theme, onThemeToggle }) {
   const [showShop, setShowShop] = useState(false);
 
   const requiredExp = getRequiredExp(player.level);
@@ -22,6 +22,11 @@ export default function HomeScreen({ player, stages, onStartQuest, onGoStageSele
   const totalCorrect = player.stats?.totalCorrect ?? 0;
   const accuracy = totalAnswered > 0 ? Math.round((totalCorrect / totalAnswered) * 100) : 0;
   const inventory = player.inventory ?? { hints: 0, potions: 0, trialTickets: 0 };
+  const DAILY_GOAL = 20;
+  const todayAnsweredCount = player.stats?.todayAnswered ?? 0;
+  const dailyGoalClaimed = player.stats?.dailyGoalClaimed ?? false;
+  const dailyGoalProgress = Math.min(1, todayAnsweredCount / DAILY_GOAL);
+  const dailyGoalDone = todayAnsweredCount >= DAILY_GOAL;
 
   function handleTodayQuest() {
     if (!todayStage) { setErrorMessage("추천 스테이지를 찾을 수 없습니다."); return; }
@@ -97,7 +102,7 @@ export default function HomeScreen({ player, stages, onStartQuest, onGoStageSele
         <div className="card-title">📅 오늘의 학습</div>
         <div className="today-stats">
           <div className="today-stat">
-            <span className="stat-value">{player.stats?.todayAnswered ?? 0}</span>
+            <span className="stat-value">{todayAnsweredCount}</span>
             <span className="stat-label">문제</span>
           </div>
           <div className="today-stat">
@@ -108,6 +113,23 @@ export default function HomeScreen({ player, stages, onStartQuest, onGoStageSele
             <span className="stat-value">{player.stats?.streakDays ?? 0}</span>
             <span className="stat-label">연속일</span>
           </div>
+        </div>
+        <div className="daily-goal-section">
+          <div className="daily-goal-header">
+            <span className="daily-goal-label">일일 목표 {todayAnsweredCount}/{DAILY_GOAL}문제</span>
+            {dailyGoalDone && (
+              <span className="daily-goal-badge">{dailyGoalClaimed ? "✅ 보상 수령 완료" : "🎉 목표 달성!"}</span>
+            )}
+          </div>
+          <div className="daily-goal-track">
+            <div
+              className={`daily-goal-fill${dailyGoalDone ? " daily-goal-fill-done" : ""}`}
+              style={{ width: `${dailyGoalProgress * 100}%` }}
+            />
+          </div>
+          {!dailyGoalDone && (
+            <div className="daily-goal-hint">목표 달성 시 💰 +5G 보상!</div>
+          )}
         </div>
       </div>
 
@@ -155,6 +177,13 @@ export default function HomeScreen({ player, stages, onStartQuest, onGoStageSele
         <button className="btn btn-secondary btn-large" onClick={onGoStageSelect} disabled={noStages}>
           🗺️ 스테이지 선택
         </button>
+
+        {(player.wrongQuestionIds?.length ?? 0) > 0 && (
+          <button className="btn btn-review btn-large" onClick={onStartReview}>
+            📚 오답 복습
+            <span className="btn-sub">오답 {player.wrongQuestionIds.length}개 · 데미지 없음</span>
+          </button>
+        )}
 
         <button
           className={`btn btn-large ${showShop ? "btn-outline" : "btn-ghost"}`}
