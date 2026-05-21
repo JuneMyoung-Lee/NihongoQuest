@@ -244,7 +244,7 @@ body {
 /* ── HomeScreen ────────────────────────────────────────────────── */
 .home-header { text-align: center; padding: 8px 0 4px; }
 .home-header-top { display: flex; justify-content: flex-end; margin-bottom: 8px; }
-.app-title { font-size: 1.75rem; font-weight: 800; color: var(--primary); text-shadow: 0 0 20px rgba(139,92,246,0.4); }
+.app-title { font-size: 1.75rem; font-weight: 800; background: linear-gradient(135deg, #ff2d55, #e8001e, #ff6b6b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-shadow: none; filter: drop-shadow(0 0 12px rgba(255,45,85,0.5)); }
 .app-subtitle { font-size: 0.85rem; color: var(--muted); margin-top: 4px; }
 
 .player-card { background: linear-gradient(135deg, rgba(139,92,246,0.15), rgba(14,165,233,0.1)); border-color: rgba(139,92,246,0.3); }
