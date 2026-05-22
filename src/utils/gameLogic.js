@@ -129,7 +129,7 @@ export function getNextStage(currentStageId, stages, player) {
 }
 
 // JLPT 그룹 유틸 ──────────────────────────────────────────────────
-export const JLPT_LEVELS = ["N5", "N4", "N3", "N2", "N1"];
+export const JLPT_LEVELS = ["N5", "N4", "N3", "N2", "N1", "BIZ"];
 
 export const JLPT_INFO = {
   N5: { area: "기초 지역", desc: "일본어의 첫걸음을 내딛는다" },
@@ -137,6 +137,7 @@ export const JLPT_INFO = {
   N3: { area: "표현 지역", desc: "연결·이유·경험 표현의 숲" },
   N2: { area: "독해 지역", desc: "복합 문법과 논리 독해" },
   N1: { area: "고급 지역", desc: "고급 표현의 심연" },
+  BIZ: { area: "비즈니스 영어 지역", desc: "실전 비즈니스 영어의 세계" },
 };
 
 // jlptLevel 기준으로 스테이지를 그룹화, 그룹 내 stageOrderInGroup 순 정렬.
