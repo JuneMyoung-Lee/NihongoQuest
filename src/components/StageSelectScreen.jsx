@@ -6,16 +6,15 @@ const JP_LEVELS = ["N5", "N4", "N3", "N2", "N1"];
 const NODES_PER_ROW = 3;
 
 const LEVEL_META = {
-  N5: { color: "#22c55e", glow: "rgba(34,197,94,0.35)",  label: "N5 입문", emoji: "🌱", desc: "일본어 첫걸음" },
-  N4: { color: "#3b82f6", glow: "rgba(59,130,246,0.35)", label: "N4 초급", emoji: "💧", desc: "기초 문법 완성" },
-  N3: { color: "#a855f7", glow: "rgba(168,85,247,0.35)", label: "N3 중급", emoji: "⚡", desc: "실전 표현 도전" },
-  N2: { color: "#f59e0b", glow: "rgba(245,158,11,0.35)", label: "N2 중고급", emoji: "🔥", desc: "고급 문법 정복" },
-  N1: { color: "#ef4444", glow: "rgba(239,68,68,0.35)",  label: "N1 고급", emoji: "💎", desc: "최고난이도" },
-  BIZ:{ color: "#0ea5e9", glow: "rgba(14,165,233,0.35)", label: "BIZ 영어", emoji: "💼", desc: "실전 비즈니스" },
+  N5: { color: "#22c55e", glow: "rgba(34,197,94,0.3)",  label: "N5 입문",   emoji: "🌱", desc: "일본어 첫걸음" },
+  N4: { color: "#3b82f6", glow: "rgba(59,130,246,0.3)", label: "N4 초급",   emoji: "💧", desc: "기초 문법 완성" },
+  N3: { color: "#a855f7", glow: "rgba(168,85,247,0.3)", label: "N3 중급",   emoji: "⚡", desc: "실전 표현 도전" },
+  N2: { color: "#f59e0b", glow: "rgba(245,158,11,0.3)", label: "N2 중고급", emoji: "🔥", desc: "고급 문법 정복" },
+  N1: { color: "#ef4444", glow: "rgba(239,68,68,0.3)",  label: "N1 고급",   emoji: "💎", desc: "최고난이도" },
+  BIZ:{ color: "#0ea5e9", glow: "rgba(14,165,233,0.3)", label: "BIZ 영어",  emoji: "💼", desc: "실전 비즈니스" },
 };
 
 /* ── 맵 세그먼트 생성 ────────────────────────────────────────────── */
-// 반환: { type:'banner'|'row'|'turn', ... }  순서 = N5→N1 (시각적 아래→위)
 function buildSegments(stages, category) {
   const levelGroups = {};
   stages.forEach((s) => {
@@ -41,7 +40,7 @@ function buildSegments(stages, category) {
       rows.push(lvlStages.slice(i, i + NODES_PER_ROW));
 
     rows.forEach((rowStages, ri) => {
-      const isReverse = rowIdx % 2 === 1;
+      const isReverse  = rowIdx % 2 === 1;
       const isLastRow  = ri === rows.length - 1;
       const isLastLevel = li === levels.length - 1;
 
@@ -54,13 +53,13 @@ function buildSegments(stages, category) {
     });
   });
 
-  // DOM에서는 역순(N1→N5)으로 렌더링 → 시각적으로 N5가 아래쪽
+  // DOM 역순(N1→N5) → 시각적으로 N5가 아래쪽
   return segs.slice().reverse();
 }
 
 /* ── 메인 컴포넌트 ───────────────────────────────────────────────── */
 export default function StageSelectScreen({ player, stages, onStartStage, onStartTrial, onGoHome }) {
-  const [category, setCategory]       = useState("jp");
+  const [category, setCategory]         = useState("jp");
   const [selectedStage, setSelectedStage] = useState(null);
   const mapRef = useRef(null);
 
@@ -78,11 +77,22 @@ export default function StageSelectScreen({ player, stages, onStartStage, onStar
   const currentStages = category === "jp" ? jpStages : bizStages;
   const segments = buildSegments(currentStages, category);
 
-  // 카테고리 바뀌면 스크롤을 맨 아래(N5 위치)로
+  // 현재 진행 단계(첫 번째 잠금 해제 노드)로 스크롤, 없으면 맨 아래(N5)
   useEffect(() => {
-    if (mapRef.current) {
-      mapRef.current.scrollTop = mapRef.current.scrollHeight;
-    }
+    if (!mapRef.current) return;
+    // DOM 업데이트 후 두 프레임 기다림
+    const raf = requestAnimationFrame(() =>
+      requestAnimationFrame(() => {
+        if (!mapRef.current) return;
+        const cur = mapRef.current.querySelector(".map-node-unlocked, .map-node-trial");
+        if (cur) {
+          cur.scrollIntoView({ block: "center", behavior: "instant" });
+        } else {
+          mapRef.current.scrollTop = mapRef.current.scrollHeight;
+        }
+      })
+    );
+    return () => cancelAnimationFrame(raf);
   }, [category]);
 
   const handleCat = (cat) => {
@@ -117,6 +127,9 @@ export default function StageSelectScreen({ player, stages, onStartStage, onStar
 
       {/* 맵 스크롤 영역 */}
       <div className="map-scroll" ref={mapRef}>
+        {/* 상단 안개 — 잠긴 높은 레벨을 살짝 숨김 */}
+        <div className="map-fog-top" />
+
         <div className="map-inner">
           {segments.map((seg, i) => {
             if (seg.type === "banner")
@@ -142,7 +155,6 @@ export default function StageSelectScreen({ player, stages, onStartStage, onStar
             );
           })}
 
-          {/* 최상단 도달 표시 */}
           <div className="map-top-flag">🏆 최고 레벨</div>
         </div>
       </div>
@@ -164,7 +176,10 @@ export default function StageSelectScreen({ player, stages, onStartStage, onStar
 /* ── 레벨 배너 ───────────────────────────────────────────────────── */
 function LevelBanner({ meta }) {
   return (
-    <div className="map-banner" style={{ borderColor: meta.color }}>
+    <div
+      className="map-banner"
+      style={{ borderColor: meta.color, boxShadow: `0 0 18px ${meta.glow}` }}
+    >
       <span className="map-banner-emoji">{meta.emoji}</span>
       <div>
         <div className="map-banner-label" style={{ color: meta.color }}>{meta.label}</div>
@@ -174,20 +189,39 @@ function LevelBanner({ meta }) {
   );
 }
 
-/* ── 맵 행 (노드들) ──────────────────────────────────────────────── */
+/* ── 맵 행 ───────────────────────────────────────────────────────── */
 function MapRow({ stages, isReverse, pathColor, player, selectedId, onSelect }) {
-  // 역방향 행은 노드 순서를 뒤집어서 시각적으로 오른쪽→왼쪽
-  const display = isReverse ? [...stages].reverse() : stages;
+  /**
+   * 부분 행(마지막 행이 NODES_PER_ROW 미만인 경우) 처리:
+   * - isReverse 행: null을 stages 뒤에 붙인 후 reverse
+   *   → 실제 스테이지가 오른쪽(우측 아크 진입점)에 위치
+   *   → null 플레이스홀더가 왼쪽으로 연결되어 좌측 아크까지 회색 경로 연장
+   * - 정방향 행: 항상 NODES_PER_ROW개(3개)이므로 패딩 불필요
+   */
+  const allSlots = isReverse
+    ? [...stages, ...Array(Math.max(0, NODES_PER_ROW - stages.length)).fill(null)]
+    : [...stages];
+  const display = isReverse ? [...allSlots].reverse() : allSlots;
 
   return (
-    <div className={`map-row${isReverse ? " map-row-rev" : ""}`}>
+    <div className="map-row">
       {display.map((stage, vi) => {
+        /* null 슬롯: 경로 모양의 회색 플레이스홀더 */
+        if (stage === null) {
+          return (
+            <Fragment key={`ph-${vi}`}>
+              {vi > 0 && <div className="map-path-h map-path-locked" />}
+              <div className="map-node-ph" />
+            </Fragment>
+          );
+        }
+
         const isCleared  = player.clearedStageIds?.includes(stage.id);
         const isUnlocked = isStageUnlocked(stage, player);
         const canTrial   = canAttemptTrial(stage, player);
         const isSelected = selectedId === stage.id;
 
-        const state = isCleared ? "cleared"
+        const state = isCleared  ? "cleared"
                     : isUnlocked ? "unlocked"
                     : canTrial   ? "trial"
                     :              "locked";
@@ -232,37 +266,27 @@ function DetailPanel({ stage, player, onClose, onStart, onTrial }) {
   return (
     <div className="detail-overlay" onClick={onClose}>
       <div className="detail-panel" onClick={(e) => e.stopPropagation()}>
-        {/* 드래그 핸들 */}
         <div className="detail-handle" />
 
-        {/* 헤더 */}
         <div className="detail-head">
           <span className="detail-emoji">{stage.monster.emoji}</span>
           <div className="detail-title-wrap">
             <span className="detail-title">{stage.title}</span>
             <span className="detail-area">{stage.area}</span>
           </div>
-          <span
-            className="detail-lvl-badge"
-            style={{ background: meta.color }}
-          >
-            {level}
-          </span>
+          <span className="detail-lvl-badge" style={{ background: meta.color }}>{level}</span>
         </div>
 
-        {/* 상태 뱃지 */}
         <div className="detail-status-row">
           {isCleared  && <span className="detail-status ds-cleared">✅ 클리어</span>}
-          {!isCleared && isUnlocked && <span className="detail-status ds-avail">⚔️ 도전 가능</span>}
-          {!isCleared && !isUnlocked && canTrial && <span className="detail-status ds-trial">🧪 도약 시험 가능</span>}
+          {!isCleared && isUnlocked  && <span className="detail-status ds-avail">⚔️ 도전 가능</span>}
+          {!isCleared && !isUnlocked && canTrial  && <span className="detail-status ds-trial">🧪 도약 시험 가능</span>}
           {!isCleared && !isUnlocked && !canTrial && <span className="detail-status ds-locked">🔒 잠김</span>}
           {prog?.perfectCleared && <span className="detail-status ds-perfect">✨ PERFECT</span>}
         </div>
 
-        {/* 설명 */}
         <p className="detail-desc">{stage.description}</p>
 
-        {/* 메타 정보 */}
         <div className="detail-meta">
           <span>👾 {stage.monster.name} (HP {stage.monster.hp})</span>
           <span>🎁 EXP +{stage.rewards.exp}</span>
@@ -270,7 +294,6 @@ function DetailPanel({ stage, player, onClose, onStart, onTrial }) {
           {stage.recommendedLevel && <span>⭐ 권장 Lv.{stage.recommendedLevel}</span>}
         </div>
 
-        {/* 진행 현황 */}
         {prog && (
           <div className="detail-prog">
             <span className="detail-prog-label">최고 정답률</span>
@@ -281,7 +304,6 @@ function DetailPanel({ stage, player, onClose, onStart, onTrial }) {
           </div>
         )}
 
-        {/* 액션 버튼 */}
         <div className="detail-actions">
           {(isCleared || isUnlocked) && (
             <button
