@@ -6,12 +6,12 @@ const JP_LEVELS = ["N5", "N4", "N3", "N2", "N1"];
 const NODES_PER_ROW = 3;
 
 const LEVEL_META = {
-  N5: { color: "#22c55e", glow: "rgba(34,197,94,0.3)",  label: "N5 입문",   emoji: "🌱", desc: "일본어 첫걸음" },
-  N4: { color: "#3b82f6", glow: "rgba(59,130,246,0.3)", label: "N4 초급",   emoji: "💧", desc: "기초 문법 완성" },
-  N3: { color: "#a855f7", glow: "rgba(168,85,247,0.3)", label: "N3 중급",   emoji: "⚡", desc: "실전 표현 도전" },
-  N2: { color: "#f59e0b", glow: "rgba(245,158,11,0.3)", label: "N2 중고급", emoji: "🔥", desc: "고급 문법 정복" },
-  N1: { color: "#ef4444", glow: "rgba(239,68,68,0.3)",  label: "N1 고급",   emoji: "💎", desc: "최고난이도" },
-  BIZ:{ color: "#0ea5e9", glow: "rgba(14,165,233,0.3)", label: "BIZ 영어",  emoji: "💼", desc: "실전 비즈니스" },
+  N5: { color: "#818cf8", glow: "rgba(129,140,248,0.28)", label: "N5 입문",   emoji: "🌱", desc: "일본어 첫걸음" },
+  N4: { color: "#6366f1", glow: "rgba(99,102,241,0.28)",  label: "N4 초급",   emoji: "💧", desc: "기초 문법 완성" },
+  N3: { color: "#4f46e5", glow: "rgba(79,70,229,0.28)",   label: "N3 중급",   emoji: "⚡", desc: "실전 표현 도전" },
+  N2: { color: "#4338ca", glow: "rgba(67,56,202,0.28)",   label: "N2 중고급", emoji: "🔥", desc: "고급 문법 정복" },
+  N1: { color: "#3730a3", glow: "rgba(55,48,163,0.28)",   label: "N1 고급",   emoji: "💎", desc: "최고난이도" },
+  BIZ:{ color: "#1e40af", glow: "rgba(30,64,175,0.25)",   label: "BIZ 영어",  emoji: "💼", desc: "실전 비즈니스" },
 };
 
 /* ── 맵 세그먼트 생성 ────────────────────────────────────────────── */
