@@ -1128,15 +1128,15 @@ body {
 }
 .map-scroll::-webkit-scrollbar { display: none; }
 
-/* 상단 안개 — 더 높은 레벨(잠긴 구간)을 살짝 숨김 */
+/* 상단 안개 — 잠긴 상위 단계를 강하게 숨김 */
 .map-fog-top {
   position: sticky;
   top: 0;
-  height: 72px;
-  background: linear-gradient(to bottom, var(--bg) 15%, transparent 100%);
+  height: 220px;
+  background: linear-gradient(to bottom, var(--bg) 55%, transparent 100%);
   pointer-events: none;
-  z-index: 10;
-  margin-bottom: -72px;
+  z-index: 20;
+  margin-bottom: -220px;
 }
 
 /* 맵 내부 컨테이너 */
@@ -1152,7 +1152,7 @@ body {
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* 레벨 배너 — 행과 동일한 258px 너비 */
+/* 레벨 배너 — 행과 동일한 258px 너비, 아크 위에 표시 */
 .map-banner {
   display: flex;
   align-items: center;
@@ -1165,18 +1165,22 @@ body {
   width: 258px;
   flex-shrink: 0;
   backdrop-filter: blur(8px);
+  position: relative;
+  z-index: 2;
 }
 .map-banner-emoji { font-size: 1.5rem; }
 .map-banner-label { font-size: 0.875rem; font-weight: 800; }
 .map-banner-desc  { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
 
-/* ── 맵 행: 고정 너비 258px (3×62 + 2×36) ────────────────────────── */
+/* ── 맵 행: 고정 너비 258px (3×62 + 2×36), 아크 위에 표시 ────────── */
 .map-row {
   display: flex;
   align-items: center;
   width: 258px;
   flex-shrink: 0;
   padding: 3px 0;
+  position: relative;
+  z-index: 1;
 }
 
 /* 가로 경로 */
@@ -1284,29 +1288,40 @@ body {
                           0 0 0 10px rgba(139,92,246,0.07); }
 }
 
-/* ── 회전 커넥터 — 행과 동일한 258px 너비, 아크 50px ──────────────── */
+/* ── 회전 커넥터 ────────────────────────────────────────────────────
+   핵심: 경로 중심(path center)은 행 높이(68px)의 중앙 = 34px에 있음.
+   아크가 위/아래 행의 경로 중심을 정확히 연결하려면:
+     - margin-top: -34px  → 위 행의 경로 중심까지 올라감
+     - margin-bottom: -34px → 아래 행의 경로 중심까지 내려감
+     - height: 80px        → 총 스팬 (34 + 12 + 34)
+   z-index: 0 → 행(z-index:1)이 아크 위에 렌더링되어 겹침 처리
+   ─────────────────────────────────────────────────────────────────── */
 .map-turn {
   display: flex;
   width: 258px;
-  height: 40px;
+  height: 80px;
+  margin-top: -34px;
+  margin-bottom: -34px;
   flex-shrink: 0;
+  position: relative;
+  z-index: 0;
 }
 .map-turn-right { justify-content: flex-end; }
 .map-turn-left  { justify-content: flex-start; }
 
 .map-turn-arc {
   width: 50px;
-  height: 40px;
+  height: 80px;
   border: 5px solid;
   box-sizing: border-box;
 }
 .map-turn-right .map-turn-arc {
   border-left: none;
-  border-radius: 0 28px 28px 0;
+  border-radius: 0 40px 40px 0;
 }
 .map-turn-left .map-turn-arc {
   border-right: none;
-  border-radius: 28px 0 0 28px;
+  border-radius: 40px 0 0 40px;
 }
 
 /* 최상단 도달 표시 */
