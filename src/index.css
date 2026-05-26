@@ -1,13 +1,29 @@
 *, *::before, *::after { box-sizing: border-box; }
 
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family:
+    "Pretendard Variable", Pretendard,
+    -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI",
+    "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
+  font-feature-settings: "ss01", "cv11", "tnum" 0;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 #root {
   width: 100%;
   display: flex;
   justify-content: center;
+}
+
+::selection {
+  background: rgba(129, 140, 248, 0.35);
+  color: inherit;
 }
