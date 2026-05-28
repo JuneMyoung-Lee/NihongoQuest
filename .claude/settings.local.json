@@ -5,7 +5,25 @@
       "Bash(git commit -m ' *)",
       "Bash(git push *)",
       "Bash(git commit *)",
-      "mcp__Claude_Preview__preview_start"
+      "mcp__Claude_Preview__preview_start",
+      "WebSearch",
+      "WebFetch(domain:rive.app)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:marmelab.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(curl -sI \"https://cdn.rive.app/animations/vehicles.riv\")",
+      "Bash(curl -sI \"https://public.rive.app/community/runtime-files/2244-4463-animated-login-screen.riv\")",
+      "Bash(curl -sI \"https://cdn.rive.app/animations/juice-v7.riv\")",
+      "Bash(curl -sI \"https://raw.githubusercontent.com/rive-app/rive-react/master/test/assets/state-machine.riv\")",
+      "Bash(curl -sI \"https://raw.githubusercontent.com/rive-app/rive-react/master/test/assets/skills.riv\")",
+      "Bash(curl -sI \"https://raw.githubusercontent.com/rive-app/rive-react/master/test/assets/basketball.riv\")",
+      "Bash(curl -sI \"https://raw.githubusercontent.com/rive-app/rive-wasm/master/test/assets/hero.riv\")",
+      "WebFetch(domain:help.rive.app)",
+      "Bash(curl -s \"https://api.github.com/repos/rive-app/rive-react/contents/test/assets\")",
+      "Bash(python3 -c \"import sys,json; [print\\(f['name'], f.get\\('download_url',''\\)\\) for f in json.load\\(sys.stdin\\) if isinstance\\(f,dict\\)]\")",
+      "Bash(curl -s \"https://api.github.com/repos/rive-app/rive-wasm/contents/test/assets\")",
+      "Bash(python3 -c ' *)",
+      "Bash(curl -s \"https://api.github.com/repos/rive-app/rive-react/contents\")"
     ]
   }
 }

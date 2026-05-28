@@ -812,7 +812,7 @@ button { font-family: inherit; }
   box-shadow: 0 0 24px rgba(220,38,38,0.16);
 }
 
-/* ── BattleCanvasPanel ──────────────────────────────────── */
+/* ── BattleCanvasPanel (kept for legacy / fallback) ────── */
 .battle-canvas-panel {
   border-radius: var(--radius);
   overflow: hidden;
@@ -833,17 +833,198 @@ button { font-family: inherit; }
   image-rendering: auto;
 }
 .battle-canvas-fallback {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 260px;
-  background: var(--surface);
-  border-radius: var(--radius);
-  font-size: 0.9rem;
-  color: var(--muted);
+  display: flex; align-items: center; justify-content: center;
+  width: 100%; height: 260px;
+  background: var(--surface); border-radius: var(--radius);
+  font-size: 0.9rem; color: var(--muted);
 }
-@media (prefers-reduced-motion: reduce) { .battle-canvas-panel { display: none; } }
+
+/* ── BattleArena v2 (Rive-powered) ─────────────────────── */
+.battle-arena-v2 {
+  position: relative;
+  width: 100%;
+  height: 320px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow:
+    var(--shadow-2),
+    0 0 60px -12px var(--arena-accent, rgba(99,102,241,0.3)),
+    inset 0 0 70px rgba(0,0,0,0.55),
+    inset 0 -30px 50px rgba(0,0,0,0.35);
+  contain: layout style;
+}
+
+/* Ambient mist overlay */
+.arena-mist-layer {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 90% 50% at 50% 100%, var(--arena-mist, rgba(99,102,241,0.12)) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 35% at 25% 80%,  var(--arena-mist, rgba(99,102,241,0.06)) 0%, transparent 65%),
+    radial-gradient(ellipse 55% 30% at 75% 25%,  var(--arena-mist, rgba(99,102,241,0.05)) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 1;
+  animation: mistPulse 6s ease-in-out infinite alternate;
+}
+@keyframes mistPulse {
+  from { opacity: 0.7; }
+  to   { opacity: 1.0; }
+}
+
+/* Impact flash */
+.arena-impact-flash {
+  position: absolute; inset: 0;
+  pointer-events: none;
+  z-index: 10;
+  border-radius: var(--radius);
+}
+
+/* Projectile orb */
+.arena-projectile {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 9;
+}
+
+/* Ground strip */
+.arena-ground-strip {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 36px;
+  background: linear-gradient(180deg, transparent 0%, var(--arena-ground, rgba(18,18,42,0.9)) 100%);
+  z-index: 2;
+  border-top: 1px solid rgba(255,255,255,0.04);
+}
+
+/* Characters wrapper — staggered diagonal */
+.arena-chars-wrap {
+  position: absolute; inset: 0;
+  display: flex;
+  align-items: stretch;
+  z-index: 3;
+}
+
+/* Individual actor slots — each fills half the arena */
+.arena-actor-slot {
+  display: flex;
+  flex-direction: column;
+  width: 50%;
+}
+/* Player: anchor to BOTTOM-LEFT */
+.arena-player-slot {
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding: 0 0 14px 12px;
+}
+/* Monster: anchor to TOP-RIGHT */
+.arena-monster-slot {
+  align-items: flex-end;
+  justify-content: flex-start;
+  padding: 14px 12px 0 0;
+}
+
+/* ── BattleActor inside the arena ─────────────────────── */
+.battle-actor {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  min-width: 0;
+}
+.actor-monster { align-items: flex-end; text-align: right; }
+.actor-info { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
+.actor-name {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 1px 6px rgba(0,0,0,0.7);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+  letter-spacing: -0.01em;
+}
+.actor-hp-num {
+  font-size: 0.64rem;
+  color: rgba(255,255,255,0.55);
+  white-space: nowrap;
+}
+.battle-actor .progress-bar-track { height: 5px; width: 120px; max-width: 100%; }
+
+/* Character wrap + Rive canvas */
+.actor-char-wrap {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  pointer-events: none;
+}
+.actor-rive-wrap {
+  width: 140px;
+  height: 170px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.actor-rive-monster {
+  width: 160px;
+  height: 190px;
+}
+.rive-char-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.rive-char-canvas canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+  filter: drop-shadow(0 5px 14px rgba(0, 0, 0, 0.65));
+}
+/* Player tint: shift green (120°) → cobalt-blue (240°) with hue-rotate(120deg)
+   so the hero looks clearly distinct from the green enemy goblin.
+   Include drop-shadow here too — filter prop is not additive. */
+.rive-player-tint canvas {
+  filter: hue-rotate(120deg) saturate(1.4) brightness(1.05)
+          drop-shadow(0 4px 18px rgba(80, 120, 255, 0.55));
+}
+
+/* Float text stays on top inside actor-char-wrap */
+.float-text {
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  white-space: nowrap;
+  font-size: 1.15rem;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  pointer-events: none;
+  z-index: 20;
+}
+.float-damage { color: #f87171; text-shadow: 0 1px 8px rgba(239,68,68,0.7); }
+.float-heal   { color: #4ade80; text-shadow: 0 1px 8px rgba(34,197,94,0.7); }
+
+/* HP bar colours inside arena */
+[data-theme="dark"] .battle-arena-v2 .progress-bar-track {
+  background: rgba(255,255,255,0.12);
+}
+[data-theme="light"] .battle-arena-v2 .progress-bar-track {
+  background: rgba(0,0,0,0.18);
+}
+
+/* Light-mode arena overlay tweak — keep text legible */
+[data-theme="light"] .battle-arena-v2 .actor-name {
+  color: #fff;
+  text-shadow: 0 1px 8px rgba(0,0,0,0.8);
+}
+[data-theme="light"] .battle-arena-v2 .actor-hp-num {
+  color: rgba(255,255,255,0.65);
+}
 
 /* ── BattleScreen ───────────────────────────────────────── */
 .battle-header {
@@ -891,74 +1072,11 @@ button { font-family: inherit; }
   color: var(--text-success);
 }
 
-/* 배틀 아레나 */
-.battle-arena {
-  padding: 14px 14px 10px;
-  overflow: visible;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.arena-monster-row {
-  display: flex;
-  align-items: flex-end;
-  justify-content: flex-end;
-}
-.arena-player-row {
-  display: flex;
-  align-items: flex-start;
-  justify-content: flex-start;
-}
+/* Legacy .battle-arena (kept in case old component referenced elsewhere) */
+.battle-arena { padding: 14px 14px 10px; overflow: visible; display: flex; flex-direction: column; gap: 8px; }
+.arena-monster-row { display: flex; align-items: flex-end; justify-content: flex-end; }
+.arena-player-row  { display: flex; align-items: flex-start; justify-content: flex-start; }
 .arena-spacer { flex: 1; }
-
-.battle-actor {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 3px;
-  min-width: 0;
-  max-width: 54%;
-}
-.actor-monster { align-items: flex-end; text-align: right; }
-.actor-info { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
-.actor-name {
-  font-size: 0.74rem;
-  font-weight: 700;
-  color: var(--text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 120px;
-  letter-spacing: -0.01em;
-}
-.actor-hp-num { font-size: 0.66rem; color: var(--muted); white-space: nowrap; }
-.battle-actor .progress-bar-track { height: 6px; width: 130px; max-width: 100%; }
-
-.actor-char-wrap {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 64px;
-  height: 64px;
-  pointer-events: none;
-}
-.actor-emoji { font-size: 2.4rem; line-height: 1; display: block; user-select: none; }
-.actor-emoji-monster { font-size: 3rem; }
-
-.float-text {
-  position: absolute;
-  top: -4px;
-  left: 50%;
-  white-space: nowrap;
-  font-size: 1.1rem;
-  font-weight: 900;
-  letter-spacing: -0.01em;
-  pointer-events: none;
-  z-index: 20;
-}
-.float-damage { color: #f87171; text-shadow: 0 1px 8px rgba(239, 68, 68, 0.55); }
-.float-heal   { color: #4ade80; text-shadow: 0 1px 8px rgba(34, 197, 94, 0.55); }
 
 /* 전투 로그 */
 .battle-log {

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import ProgressBar from "./ProgressBar";
 import VocabNotesPanel from "./VocabNotesPanel";
 import AnnotatedText from "./AnnotatedText";
-import BattleCanvasPanel from "./BattleCanvasPanel";
+import BattleArena from "./BattleArena";
 import { vocabulary } from "../data/vocabulary";
 import { getVocabularyByIds } from "../utils/question";
 
@@ -48,6 +48,11 @@ export default function BattleScreen({ battleState, setBattleState, player, stag
   const [battleEvent, setBattleEvent] = useState(null);
   const [battleLog, setBattleLog] = useState([]);
   const [isResolving, setIsResolving] = useState(false);
+
+  // Rive / Framer Motion character animation states
+  const [playerAnimState, setPlayerAnimState] = useState("idle");
+  const [monsterAnimState, setMonsterAnimState] = useState("idle");
+  const animResetTimerRef = useRef(null);
 
   const battleStateRef = useRef(battleState);
   const onBattleEndRef = useRef(onBattleEnd);
@@ -107,6 +112,56 @@ export default function BattleScreen({ battleState, setBattleState, player, stag
     }, 400);
     return () => clearTimeout(timer);
   }, [battleState.isFinished, battleState.battleSessionId, battleState.monsterHp]);
+
+  // battleEvent → character animation state (Rive + Framer Motion)
+  useEffect(() => {
+    if (!battleEvent) return;
+    const { type, source } = battleEvent;
+
+    // Clear any pending reset timer
+    if (animResetTimerRef.current) clearTimeout(animResetTimerRef.current);
+
+    let playerAnim = "idle";
+    let monsterAnim = "idle";
+    let autoResetMs = 650;
+
+    switch (type) {
+      case "damage":
+        if (source === "player") {
+          playerAnim  = "attack";
+          monsterAnim = "hit";
+        } else {
+          monsterAnim = "attack";
+          playerAnim  = "hit";
+        }
+        break;
+      case "heal":
+        playerAnim   = "heal";
+        autoResetMs  = 550;
+        break;
+      case "clear":
+        monsterAnim  = "die";
+        autoResetMs  = 0; // stay dead — don't reset
+        break;
+      case "fail":
+        playerAnim   = "hit";
+        autoResetMs  = 0; // stay hit — don't reset
+        break;
+      default:
+        return; // hint / unknown → no character animation
+    }
+
+    setPlayerAnimState(playerAnim);
+    setMonsterAnimState(monsterAnim);
+
+    if (autoResetMs > 0) {
+      animResetTimerRef.current = setTimeout(() => {
+        setPlayerAnimState("idle");
+        setMonsterAnimState("idle");
+      }, autoResetMs);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [battleEvent?.id]);
 
   // ── 구조분해 ────────────────────────────────────────────────────
   const {
@@ -251,13 +306,21 @@ export default function BattleScreen({ battleState, setBattleState, player, stag
         </div>
       )}
 
-      {/* Phaser 2D 배틀 캔버스 */}
-      <BattleCanvasPanel
-        battleState={battleState}
-        currentStage={stage}
-        player={player}
-        theme={appTheme}
+      {/* Rive 배틀 아레나 */}
+      <BattleArena
+        playerHp={playerHp}
+        playerMaxHp={playerMaxHp}
+        monsterHp={monsterHp}
+        monsterMaxHp={monsterMaxHp}
+        monsterDisplay={monsterDisplay}
+        isTrial={isTrial}
+        playerAnimState={playerAnimState}
+        monsterAnimState={monsterAnimState}
+        onPlayerAnimComplete={() => setPlayerAnimState("idle")}
+        onMonsterAnimComplete={() => setMonsterAnimState("idle")}
         battleEvent={battleEvent}
+        themeClass={themeClass}
+        monsterTheme={monsterDisplay.theme ?? "default"}
       />
 
       {/* 클리어 목표 */}
